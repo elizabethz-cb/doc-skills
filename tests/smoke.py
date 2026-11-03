@@ -285,9 +285,10 @@ for w in ("draft", "update", "learn"):
     check(f"workflow '{w}' reads the shared folder rules and runs only when invoked",
           "shared/folder-rules.md" in text and "disable-model-invocation: true" in text)
     check(f"README documents /docs-skills:{w}", f"/docs-skills:{w}" in readme)
-al = ROOT / "skills/apply-lessons/SKILL.md"
-check("workflow 'apply-lessons' exists, runs only when invoked and documents itself in the README",
-      al.exists() and "disable-model-invocation: true" in al.read_text(encoding="utf-8") and "/docs-skills:apply-lessons" in readme)
+for w in ("apply-lessons", "add-doctype"):
+    f = ROOT / "skills" / w / "SKILL.md"
+    check(f"workflow '{w}' exists, runs only when invoked and documents itself in the README",
+          f.exists() and "disable-model-invocation: true" in f.read_text(encoding="utf-8") and f"/docs-skills:{w}" in readme)
 rule_lines = ["Never edit, move, rename or delete anything in input/", "Write only inside output/", "Do not send, upload or share anything"]
 texts = {p: p.read_text(encoding="utf-8", errors="ignore") for p in ROOT.rglob("*.md") if ".git" not in p.parts}
 for line in rule_lines:

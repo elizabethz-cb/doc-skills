@@ -84,6 +84,8 @@ A document type is one folder in `skills/drafting-documents/doctypes/`. You do n
 6. **Check it:** `python skills/drafting-documents/scripts/fill.py check skills/drafting-documents/doctypes/handover`. Each message says what to fix. When it prints OK, the template, fields and example all match.
 7. **Try it** on a fictional engagement, look at the Word file, and run `python tests/smoke.py`.
 
+**Shortcut:** from the plugin repo, run `/docs-skills:add-doctype <type name> <path to template.docx>`. Claude reads the blank template (you confirm it holds no customer data), proposes the fields and placeholders for your approval, puts the placeholders in a copy, writes the other files and runs the checks above. You review the result in Word. Not yet tried in a real session.
+
 Tips: type each placeholder in one go (Word sometimes splits text into pieces, which loses formatting inside that paragraph), and keep fonts and headings the way your company wants them, because the tool only fills text.
 
 ## 6. Improve it over time

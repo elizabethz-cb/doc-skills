@@ -1,0 +1,33 @@
+{
+  "title": "Infrastructure readiness assessment",
+  "customer_name": "CUSTOMER_001",
+  "document_date": "2026-11-03",
+  "summary": "The platform works, but recovery, access control and monitoring are weaker than the business needs. The most important gaps are untested backups, shared administrator accounts and monitoring that does not warn before customers are affected.",
+  "scope": "This assessment is based on one workshop on 2026-10-20 and the information provided by CUSTOMER_001. No systems were inspected. Cost was not assessed because no cost data was available.",
+  "findings": [
+    {"id": "F1", "area": "reliability", "finding": "Backups run nightly, but no restore has been tested this year, so recovery time is unknown.", "severity": "high", "recommendation": "Test a full restore of the most important system and record the time it takes.", "effort": "S"},
+    {"id": "F2", "area": "security", "finding": "Administrators share two accounts for the database servers, so actions cannot be traced to a person.", "severity": "high", "recommendation": "Move to personal administrator accounts with a clear approval process.", "effort": "S"},
+    {"id": "F3", "area": "security", "finding": "Remote access to servers does not use multi-factor authentication, although the staff VPN does.", "severity": "medium", "recommendation": "Require multi-factor authentication for all remote access to servers.", "effort": "M"},
+    {"id": "F4", "area": "operations", "finding": "Monitoring only shows whether servers are up. Customers usually notice problems first.", "severity": "medium", "recommendation": "Add alerts for disk space, database performance and web site response time.", "effort": "M"},
+    {"id": "F5", "area": "performance", "finding": "Load roughly doubles in the peak season and the web site slows down.", "severity": "medium", "recommendation": "Agree a peak-season capacity plan and test it before the next peak.", "effort": "M"}
+  ],
+  "scores": [
+    {"area": "Security", "score": "2", "comment": "Shared accounts and no multi-factor authentication for server access."},
+    {"area": "Reliability", "score": "2", "comment": "Backups exist but are untested."},
+    {"area": "Operations", "score": "2", "comment": "Monitoring is limited to up and down."},
+    {"area": "Performance", "score": "3", "comment": "Works in normal periods, slows in the peak season."},
+    {"area": "Cost", "score": "Not assessed", "comment": "No cost data per system."}
+  ],
+  "next_steps": [
+    "Test a restore of the most important system within the next month.",
+    "Replace the shared administrator accounts with personal accounts.",
+    "Require multi-factor authentication for remote server access.",
+    "Add alerts for disk space, database performance and web site response time.",
+    "Agree and test a peak-season capacity plan before November."
+  ],
+  "open_questions": [
+    {"id": "Q1", "question": "Is there a written recovery plan, and who owns it?", "impact": "risk", "assumed_meanwhile": "No written plan exists"},
+    {"id": "Q2", "question": "Can monthly infrastructure costs be provided for the last 12 months?", "impact": "scope", "assumed_meanwhile": "Cost is not assessed"},
+    {"id": "Q3", "question": "When was the firewall last reviewed for security updates?", "impact": "risk", "assumed_meanwhile": "Not reviewed for 18 months"}
+  ]
+}

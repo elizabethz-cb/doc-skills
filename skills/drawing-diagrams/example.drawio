@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="diagram1" name="Target architecture (summary)">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="onprem" value="CUSTOMER_001 data centre" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;container=1;collapsible=0;recursiveResize=0;strokeColor=#7F7F7F;" vertex="1" parent="1"><mxGeometry x="30" y="149" width="180" height="134" as="geometry"/></mxCell>
+        <mxCell id="directory" value="Active Directory" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="onprem"><mxGeometry x="20" y="54" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="aws" value="AWS" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;container=1;collapsible=0;recursiveResize=0;strokeColor=#ED7100;" vertex="1" parent="1"><mxGeometry x="270" y="30" width="820" height="462" as="geometry"/></mxCell>
+        <mxCell id="prod" value="Production" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;container=1;collapsible=0;recursiveResize=0;strokeColor=#666666;" vertex="1" parent="aws"><mxGeometry x="20" y="54" width="580" height="224" as="geometry"/></mxCell>
+        <mxCell id="web" value="Web tier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="prod"><mxGeometry x="20" y="99" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="app" value="Application tier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="prod"><mxGeometry x="220" y="99" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="db" value="Database&lt;br&gt;(managed, highly available)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="prod"><mxGeometry x="420" y="54" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="files" value="File service" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="prod"><mxGeometry x="420" y="144" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="test" value="Test environment" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;container=1;collapsible=0;recursiveResize=0;strokeColor=#666666;" vertex="1" parent="aws"><mxGeometry x="20" y="308" width="180" height="134" as="geometry"/></mxCell>
+        <mxCell id="testenv" value="Test systems&lt;br&gt;(working hours only)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="test"><mxGeometry x="20" y="54" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="monitor" value="Monitoring and audit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="aws"><mxGeometry x="660" y="218" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="users" value="Customers" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="30" y="313" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="edge1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="users" target="web"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="edge2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="web" target="app"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="edge3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="app" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="edge4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="app" target="files"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="edge5" value="Secure connection" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="directory" target="app"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="edge6" value="Logs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="prod" target="monitor"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

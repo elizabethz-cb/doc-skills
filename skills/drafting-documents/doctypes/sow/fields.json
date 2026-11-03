@@ -1,0 +1,25 @@
+{
+  "name": "sow",
+  "label": "Statement of Work",
+  "fields": {
+    "title": {"type": "text", "help": "Short project title in business words."},
+    "customer_name": {"type": "text", "help": "Use the customer placeholder exactly as it appears in the notes."},
+    "document_date": {"type": "text", "help": "Today's date, e.g. 2026-11-03."},
+    "background": {"type": "text", "help": "2 to 4 sentences: who the customer is and why this project exists."},
+    "objectives": {"type": "list", "help": "3 to 5 business outcomes. No technology names unless the customer asked for them."},
+    "scope_in": {"type": "list", "help": "What is included, in business terms."},
+    "scope_out": {"type": "list", "help": "What is explicitly not included."},
+    "deliverables": {"type": "table", "columns": ["name", "description"], "help": "Documents, environments or services handed over."},
+    "phases": {"type": "table", "columns": ["name", "description", "duration"], "help": "Phases in order. Duration as stated in the notes, otherwise 'To be confirmed'."},
+    "assumptions": {"type": "list", "help": "Things assumed because the notes were silent or unclear."},
+    "customer_responsibilities": {"type": "list", "help": "What the customer must provide or decide."},
+    "price_summary": {"type": "text", "help": "Only figures stated in the notes. Otherwise: 'To be confirmed after the open items are answered.'"},
+    "open_questions": {"type": "table", "columns": ["id", "question", "impact", "assumed_meanwhile"], "help": "impact is one of: price, scope, schedule, design, risk."}
+  },
+  "forbidden_patterns": [
+    {"name": "instance type", "regex": "\\b(?:db\\.)?[a-z]\\d[a-z]{0,2}\\.(?:nano|micro|small|medium|large|\\d*xlarge|metal)\\b"},
+    {"name": "IP address or network range", "regex": "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b"},
+    {"name": "resource count such as '2 x EC2'", "regex": "\\b\\d+\\s*x\\s*(?:ec2|rds|instances?|servers?|nodes?|vms?)\\b"},
+    {"name": "cloud account number", "regex": "(?<!\\d)\\d{12}(?!\\d)"}
+  ]
+}

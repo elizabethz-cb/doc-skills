@@ -1,0 +1,20 @@
+{
+  "name": "assessment",
+  "label": "Assessment report",
+  "fields": {
+    "title": {"type": "text", "help": "Short title, e.g. 'Cloud readiness assessment'."},
+    "customer_name": {"type": "text", "help": "Use the customer placeholder exactly as it appears in the notes."},
+    "document_date": {"type": "text", "help": "Today's date, e.g. 2026-11-03."},
+    "summary": {"type": "text", "help": "One short paragraph: the overall picture and the two or three points that matter most."},
+    "scope": {"type": "text", "help": "What was looked at and what was not, and what the findings are based on."},
+    "findings": {"type": "table", "columns": ["id", "area", "finding", "severity", "recommendation", "effort"],
+                 "help": "area: security, reliability, cost, operations or performance. severity: high, medium or low. effort: S, M or L."},
+    "scores": {"type": "table", "columns": ["area", "score", "comment"], "help": "Score 1 to 5, or 'Not assessed' when there is no evidence."},
+    "next_steps": {"type": "list", "help": "3 to 6 suggested actions in priority order."},
+    "open_questions": {"type": "table", "columns": ["id", "question", "impact", "assumed_meanwhile"], "help": "impact is one of: price, scope, schedule, design, risk."}
+  },
+  "forbidden_patterns": [
+    {"name": "cloud account number", "regex": "(?<!\\d)\\d{12}(?!\\d)"},
+    {"name": "access key", "regex": "\\b(?:AKIA|ASIA)[A-Z0-9]{16}\\b"}
+  ]
+}

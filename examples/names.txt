@@ -1,0 +1,7 @@
+# One group per line. Aliases share one placeholder. A trailing * means "starts with".
+customer: Example Corp Ltd | Example Corp | Examplecorp
+person: Yoav Cohen | Yoav
+person: Dana Levi | Dana
+person: Lior Barak | Lior
+project: Project Lighthouse
+term: ex-*

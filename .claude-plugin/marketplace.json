@@ -1,0 +1,11 @@
+{
+  "name": "docs-skills-marketplace",
+  "owner": { "name": "YOUR NAME" },
+  "plugins": [
+    {
+      "name": "docs-skills",
+      "source": "./",
+      "description": "Draft customer documents from redacted notes."
+    }
+  ]
+}

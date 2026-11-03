@@ -1,0 +1,29 @@
+{
+  "title": "Target architecture (summary)",
+  "level": "summary",
+  "direction": "LR",
+  "groups": [
+    {"id": "onprem", "label": "CUSTOMER_001 data centre", "kind": "onprem"},
+    {"id": "aws", "label": "AWS", "kind": "cloud"},
+    {"id": "prod", "label": "Production", "parent": "aws"},
+    {"id": "test", "label": "Test environment", "parent": "aws"}
+  ],
+  "nodes": [
+    {"id": "users", "label": "Customers", "kind": "actor"},
+    {"id": "directory", "label": "Active Directory", "kind": "external", "group": "onprem"},
+    {"id": "web", "label": "Web tier", "kind": "compute", "group": "prod"},
+    {"id": "app", "label": "Application tier", "kind": "compute", "group": "prod"},
+    {"id": "db", "label": "Database\n(managed, highly available)", "kind": "database", "group": "prod"},
+    {"id": "files", "label": "File service", "kind": "storage", "group": "prod"},
+    {"id": "testenv", "label": "Test systems\n(working hours only)", "kind": "compute", "group": "test"},
+    {"id": "monitor", "label": "Monitoring and audit", "kind": "security", "group": "aws"}
+  ],
+  "edges": [
+    {"from": "users", "to": "web", "label": "HTTPS"},
+    {"from": "web", "to": "app"},
+    {"from": "app", "to": "db"},
+    {"from": "app", "to": "files"},
+    {"from": "directory", "to": "app", "label": "Secure connection"},
+    {"from": "prod", "to": "monitor", "label": "Logs"}
+  ]
+}

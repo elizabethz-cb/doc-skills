@@ -1,0 +1,58 @@
+{
+  "title": "Move of core systems to AWS",
+  "customer_name": "CUSTOMER_001",
+  "document_date": "2026-11-03",
+  "background": "CUSTOMER_001 runs freight tracking and invoicing for about 300 business customers from two on-premises server rooms. The hardware leases end on 2027-03-31, so the systems need a new home before then.",
+  "objectives": [
+    "Move the web, application, database and batch systems and the file service to AWS before the hardware leases end.",
+    "Provide a highly available production setup that meets the agreed recovery targets.",
+    "Provide a separate test environment that runs only during working hours.",
+    "Leave the CUSTOMER_001 team trained and supported during the first weeks after go-live."
+  ],
+  "scope_in": [
+    "Design, build and test of the production and test environments on AWS.",
+    "Migration of the existing systems without application changes.",
+    "Recovery setup for production: at most 15 minutes of data loss and restoration within 4 hours.",
+    "One half-day training session for the system administrators.",
+    "Four weeks of support after go-live."
+  ],
+  "scope_out": [
+    "Changes to the application code.",
+    "Migration of Active Directory, which stays on-premises.",
+    "A recovery setup for the test environment.",
+    "Ongoing operation of the environment after the support period."
+  ],
+  "deliverables": [
+    {"name": "Target design", "description": "Design document for the AWS environments, delivered after this SOW is agreed."},
+    {"name": "Production and test environments", "description": "Built, tested and handed over."},
+    {"name": "Migration of systems and data", "description": "Completed according to a cut-over plan agreed with the customer."},
+    {"name": "Training and support", "description": "One half-day session and four weeks of support."}
+  ],
+  "phases": [
+    {"name": "Discovery and design", "description": "Answer the open items and agree the target design.", "duration": "To be confirmed"},
+    {"name": "Build and test", "description": "Build the environments and test the recovery setup.", "duration": "To be confirmed"},
+    {"name": "Migration and go-live", "description": "Move the systems outside the change-freeze period.", "duration": "To be confirmed"},
+    {"name": "Support", "description": "Support after go-live.", "duration": "4 weeks"}
+  ],
+  "assumptions": [
+    "No production changes are made between 2026-11-20 and 2027-01-05.",
+    "The test environment runs during working hours only.",
+    "Data is stored in Frankfurt until the question about data location is answered.",
+    "Existing software licences can be used on AWS. The customer confirms this."
+  ],
+  "customer_responsibilities": [
+    "Provide access to systems, documentation and people during discovery.",
+    "Decide the open items in this document within agreed times.",
+    "Confirm the change-freeze period and the go-live date.",
+    "Provide a contact for licence questions."
+  ],
+  "price_summary": "The customer expects the monthly AWS cost to stay under USD 9,000 for production and test together (approximate). A price for the work will be confirmed after the open items are answered.",
+  "open_questions": [
+    {"id": "Q1", "question": "Must any customer data stay in Israel?", "impact": "price", "assumed_meanwhile": "Frankfurt"},
+    {"id": "Q2", "question": "What is the go-live date, given the board's wish for 2026-12-15 and the change freeze from 2026-11-20?", "impact": "schedule", "assumed_meanwhile": "No date is stated in this SOW"},
+    {"id": "Q3", "question": "Is extra capacity needed for the peak season (November to January)?", "impact": "price", "assumed_meanwhile": "Not included until confirmed"},
+    {"id": "Q4", "question": "Which option do you prefer for the file service?", "impact": "scope", "assumed_meanwhile": "A managed file service is proposed"},
+    {"id": "Q5", "question": "Can the existing Windows licences be used on AWS?", "impact": "price", "assumed_meanwhile": "Yes, to be confirmed"},
+    {"id": "Q6", "question": "Can old archive data be removed or archived before the move?", "impact": "price", "assumed_meanwhile": "All data is moved"}
+  ]
+}

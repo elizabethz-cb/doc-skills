@@ -269,6 +269,28 @@ with tempfile.TemporaryDirectory() as tmp:
     check("icons pass through and special characters are escaped",
           r.returncode == 0 and "resIcon=mxgraph.aws4.ec2" in (tmp / "icon.drawio").read_text() and not drawio_problems(tmp / "icon.drawio"), r.stderr)
 
+# 5. engagement workflows (the lint in check 0 already covers their names and descriptions)
+import re
+
+skill_names = {p.name for p in (ROOT / "skills").iterdir() if p.is_dir()}
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+for w in ("draft", "update", "learn"):
+    f = ROOT / "skills" / w / "SKILL.md"
+    check(f"workflow '{w}' exists", f.exists())
+    if not f.exists():
+        continue
+    text = f.read_text(encoding="utf-8")
+    named = set(re.findall(r"`([a-z-]+)` skill", text))
+    check(f"workflow '{w}' names only skills that exist", bool(named) and named <= skill_names, str(named - skill_names))
+    check(f"workflow '{w}' reads the shared folder rules and runs only when invoked",
+          "shared/folder-rules.md" in text and "disable-model-invocation: true" in text)
+    check(f"README documents /docs-skills:{w}", f"/docs-skills:{w}" in readme)
+rule_lines = ["Never edit, move, rename or delete anything in input/", "Write only inside output/", "Do not send, upload or share anything"]
+texts = {p: p.read_text(encoding="utf-8", errors="ignore") for p in ROOT.rglob("*.md") if ".git" not in p.parts}
+for line in rule_lines:
+    where = [p.name for p, t in texts.items() if line in t]
+    check(f"folder rule '{line[:30]}...' is written in exactly one file", where == ["folder-rules.md"], str(where))
+
 print()
 if failures:
     print(f"{len(failures)} check(s) failed")

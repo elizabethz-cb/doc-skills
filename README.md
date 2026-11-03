@@ -216,3 +216,23 @@ The `drawing-diagrams` skill makes a draw.io file from your notes. Claude writes
 - **Levels.** A diagram for a SOW is `summary`: business-level boxes only. The script rejects instance types, IP addresses and ranges, resource counts, account numbers, subnets and availability zones, and more than 15 boxes. A design document can use `detailed`. This is the same rule the SOW follows, so a diagram cannot give away what the SOW keeps out.
 - **Spec format and rules:** `skills/drawing-diagrams/spec-format.md` and `rules.md`. A working example is `example-spec.json` and its result `example.drawio`.
 - **Limits.** It creates new diagrams only and does not edit existing draw.io files. The preview PNG is a rough drawing made by the script, not what draw.io shows. Arrows are routed by draw.io when it opens the file, so some may overlap and need a drag. The tests check the file's structure (unique ids, arrows point at real boxes, boxes sit inside their groups, no overlaps), but **how the file looks inside draw.io has not been checked here**. AWS icon names (`icon`) are optional and unverified: an empty box means the name is wrong. Putting the picture into the Word template automatically is not built yet.
+
+## 16. Engagement workflows
+
+Three commands that run the skills above on one engagement folder, so you do not paste prompts. Claude Code only (plugin install or `--plugin-dir`), not chat upload. They run only when you type them.
+
+Make a folder with `input/` (copies of the customer files, never originals) and `output/` (empty), start Claude Code in it, and run:
+
+```
+/docs-skills:draft SOW "Acme Ltd"                  # v1 of the document and a summary diagram
+/docs-skills:update SOW acme-sow-v1-edited.docx    # next version after you add files to input/
+/docs-skills:learn SOW acme-sow-final.docx         # lessons from the accepted final
+```
+
+| Command | Uses | Writes to `output/` |
+| --- | --- | --- |
+| `draft <type> <customer>` | `drafting-documents`, `drawing-diagrams` | `<type>-v1.json`, `<type>-v1.docx`, `diagram.drawio`, `diagram-preview.png` |
+| `update <type> <edited file>` | `drafting-documents` | the next unused `<type>-v<N>.json` and `.docx` |
+| `learn <type> <accepted final>` | `learning-from-accepted-documents` | `lessons-proposed.md`, only lessons you approve |
+
+All three first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. `learn` never writes to the plugin: you paste the approved lessons into `doctypes/<type>/lessons.md` yourself. Not yet tried in a real Claude Code session.

@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.5.0 (draft)
+- New commands /docs-skills:draft, :update and :learn (skills that run only when invoked) for an engagement folder with input/ and output/. The folder rules live in shared/folder-rules.md. Not yet tried in a real Claude Code session.
+
 ## 0.4.0 (draft)
 - New skill drawing-diagrams: spec to .drawio with automatic layout, summary level that blocks low-level detail (same rule as the SOW), optional preview image. Not yet checked inside draw.io.
 

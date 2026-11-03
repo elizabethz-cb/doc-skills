@@ -235,4 +235,6 @@ Make a folder with `input/` (copies of the customer files, never originals) and 
 | `update <type> <edited file>` | `drafting-documents` | the next unused `<type>-v<N>.json` and `.docx` |
 | `learn <type> <accepted final>` | `learning-from-accepted-documents` | `lessons-proposed.md`, only lessons you approve |
 
-All three first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. `learn` never writes to the plugin: you paste the approved lessons into `doctypes/<type>/lessons.md` yourself. Not yet tried in a real Claude Code session.
+`/docs-skills:apply-lessons <type> <path to lessons-proposed.md>` is the second step of learning. Run it from the **plugin repo**, not an engagement folder. It checks the lessons are generic, adds them to `doctypes/<type>/lessons.md` and runs the smoke test. You then check `git diff`, raise the version, add a CHANGELOG line, commit and push, so colleagues get the lesson.
+
+`draft`, `update` and `learn` first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. `learn` never writes to the plugin: `apply-lessons` (above) moves the approved lessons into `doctypes/<type>/lessons.md`. Not yet tried in a real Claude Code session.

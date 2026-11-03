@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.6.0 (draft)
+- New command /docs-skills:apply-lessons, run from the plugin repo: adds the lessons approved by /docs-skills:learn to a document type's lessons.md and runs the smoke test. Not yet tried in a real Claude Code session.
+
 ## 0.5.0 (draft)
 - New commands /docs-skills:draft, :update and :learn (skills that run only when invoked) for an engagement folder with input/ and output/. The folder rules live in shared/folder-rules.md. Not yet tried in a real Claude Code session.
 

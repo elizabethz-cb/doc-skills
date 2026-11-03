@@ -18,6 +18,8 @@ if subprocess.run([sys.executable, str(ROOT / "tools/lint_skills.py")]).returnco
 dist = ROOT / "dist"
 dist.mkdir(exist_ok=True)
 for folder in sorted(p for p in (ROOT / "skills").iterdir() if p.is_dir()):
+    if "disable-model-invocation: true" in (folder / "SKILL.md").read_text(encoding="utf-8"):
+        continue  # plugin-only workflow: it needs ${CLAUDE_PLUGIN_ROOT}, which chat does not have
     out = dist / f"{folder.name}.zip"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for root, dirs, files in os.walk(folder):

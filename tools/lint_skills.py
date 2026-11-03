@@ -78,7 +78,8 @@ always = 0
 for folder in skills:
     fm = re.match(r"^---\n(.*?)\n---\n", (folder / "SKILL.md").read_text(encoding="utf-8"), re.S)
     if fm:
-        always += tokens(fm.group(1))
+        if "disable-model-invocation: true" not in fm.group(1):  # loads only when invoked by name
+            always += tokens(fm.group(1))
         if len(fm.group(1)) > 600:
             warnings.append(f"{folder.name}: name and description are about {tokens(fm.group(1))} tokens and load every session. Shorten them.")
 for lessons in (ROOT / "skills").rglob("lessons.md"):

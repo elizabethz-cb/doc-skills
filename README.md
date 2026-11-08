@@ -18,7 +18,7 @@ A Claude Code plugin for customer documents: four skills that do the work, and s
 | Command | Run it in | What it does |
 | --- | --- | --- |
 | `/docs-skills:draft` | an engagement folder | First version of a document plus a summary diagram. |
-| `/docs-skills:update` | an engagement folder | Next numbered version after new files arrive. |
+| `/docs-skills:update` | an engagement folder | Next numbered version of the document, the diagram or both, after new files or your edits. |
 | `/docs-skills:learn` | an engagement folder | Proposes lessons from an accepted final. |
 | `/docs-skills:apply-lessons` | the plugin repo | Adds the approved lessons to a document type's `lessons.md`. |
 | `/docs-skills:add-doctype` | the plugin repo | Builds a new document type from a Word template. |
@@ -55,7 +55,7 @@ To try it without installing, start Claude Code with `claude --plugin-dir <path 
 # 2. Start Claude Code in that folder and run:
 /docs-skills:draft SOW "Acme Ltd"
 # 3. Review the Word file and the open questions in output/. Send the questions to the customer.
-# 4. Edit the Word file, add new files to input/, then run /docs-skills:update for the next version.
+# 4. Edit a copy of the Word file (or the diagram), add new files to input/, then run /docs-skills:update for the next version.
 # 5. When the document is accepted, run /docs-skills:learn, then /docs-skills:apply-lessons (section 14).
 ```
 
@@ -253,14 +253,14 @@ Six commands run the skills for you. Claude Code only (plugin install or `--plug
 
 ```
 /docs-skills:draft SOW "Acme Ltd"                  # v1 of the document and a summary diagram
-/docs-skills:update SOW acme-sow-v1-edited.docx    # next version after you add files to input/
+/docs-skills:update SOW acme-sow-v1-edited.docx    # next version of the document, the diagram or both
 /docs-skills:learn SOW acme-sow-final.docx         # lessons from the accepted final
 ```
 
 | Command | Uses | Writes to `output/` |
 | --- | --- | --- |
-| `draft <type> <customer>` | `drafting-documents`, `drawing-diagrams` | `<type>-v1.json`, `<type>-v1.docx`, `diagram.drawio`, `diagram-preview.png` |
-| `update <type> <edited file>` | `drafting-documents` | the next unused `<type>-v<N>.json` and `.docx` |
+| `draft <type> <customer>` | `drafting-documents`, `drawing-diagrams` | `<type>-v1.json`, `<type>-v1.docx`, `diagram.drawio`, `diagram.json`, `diagram-preview.png` |
+| `update <type> <edited file>` | `drafting-documents`, `drawing-diagrams` | the next unused `<type>-v<N>.json` and `.docx`, and/or `diagram-v<N>.json`, `.drawio` and `-preview.png` |
 | `learn <type> <accepted final>` | `learning-from-accepted-documents` | `lessons-proposed.md`, only lessons you approve |
 
 All three first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. They never write to the plugin.
@@ -276,13 +276,15 @@ acme/                      start Claude Code here
     SOW-v1.docx            Claude's draft: leave untouched
     SOW-v1.json
     sow-working.docx       your edited copy: you make it, you save it here
-    diagram.drawio
+    diagram.drawio         the diagram, with diagram.json (its spec)
 ```
 
 1. Copy `output/SOW-v1.docx` to `output/sow-working.docx` and edit the copy in Word as much as you like. This is your real document.
-2. Only when new notes arrive: add them to `input/` and run `/docs-skills:update SOW sow-working.docx`. Give the file name, not a path. The file must be in `output/`.
+2. When you want the next version, add any new notes to `input/` and run `/docs-skills:update SOW sow-working.docx`. Give the file name, not a path. The file must be in `output/`. Claude asks what to update: the document, the diagram or both, and what is wrong or should change, for example "the diagram does not show disaster recovery". Your answer counts as a source, like the notes.
 3. Each run writes the next version, `SOW-v2.docx` and `SOW-v2.json`, then `v3` and so on. It never overwrites an earlier file and never changes your copy. For the next round, edit a copy of the latest version.
 4. When the document is accepted, put the final in `input/` and run `/docs-skills:learn`. It compares the final with the untouched `SOW-v1.docx`, so if you edited v1 itself it has nothing to learn from.
+
+**Updating the diagram.** Give `update` your edited `.drawio` file, or just say what is unclear. The drawing skill cannot edit a draw.io file, so Claude reads its boxes and arrows, writes a new spec with your changes, and rebuilds `diagram-v2.drawio`. The layout is automatic, so positions and styling you set by hand in draw.io are lost: fix those in draw.io after, or say what to change and let Claude rebuild.
 
 **What carries into the next version.** Each version is built fresh: Claude reads your copy, writes the content into the type's fields, and the template builds a new Word file. Your copy is only read.
 

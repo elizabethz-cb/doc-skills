@@ -10,10 +10,13 @@ Based on the Amazon Quick user guide ([Skills](https://docs.aws.amazon.com/quick
 | --- | --- |
 | `drafting-documents`, `drawing-diagrams`, `learning-from-accepted-documents`, `redacting-customer-files` | Add each as a skill (below). Each folder is self-contained. |
 | `draft`, `update`, `learn`, `apply-lessons`, `add-doctype`, `update-template` | Not available. They need the Claude Code plugin (`/docs-skills:` names, `${CLAUDE_PLUGIN_ROOT}`). Do not add them. |
-| Python scripts (`fill.py`, `diagram.py`, `compare.py`) | Quick lists "code execution" as a built-in skill, but the pages do not say how it works. If it cannot run the scripts, the skills fall back to giving you the draft as text and say the Word file was not built *(unverified)*. |
+| Python scripts (`fill.py`, `diagram.py`, `compare.py`) | The docs list "code execution" as a built-in skill and say local code execution is a **desktop** feature. So the desktop app can probably run them if Python and `python-docx` are installed on your machine *(unverified)*. If it cannot, the skills give you the draft as text and say the Word file was not built. |
+
+Where: you manage skills in the **desktop** app. On mobile, skills run in your conversations but you cannot manage them there. The pages do not say whether the web version shows or manages skills.
 
 ## Before you start
 
+- Install Python 3 and `pip install python-docx` on the machine where the Quick desktop app runs. Add `pillow` only for the diagram preview.
 - A skill is limited to 6 MB and a reference file to 50 MB. The four folders are well under that (about 350 KB for `drafting-documents`, less for the rest).
 - Quick is a different service from Claude: check your organisation's data policy before putting customer material in it (README section 1).
 - Add the folders as they are. Open `skills/drafting-documents/doctypes/` first and check it holds only the document types you want colleagues to get.
@@ -56,7 +59,8 @@ After a change in this repo (a new lesson, template or rule), add the changed sk
 
 ## Not verified
 
-- How Quick runs code, and whether it can run `python-docx` or create `.docx` files.
+- Whether Quick's local code execution uses your installed Python and `python-docx`, and whether it can create `.docx` files.
+- Whether the web version offers skills.
 - Which operating systems the desktop app runs on.
 - Which `SKILL.md` frontmatter fields Quick reads. The skills use `name` and `description`, the standard pair.
 - Whether a zip works, and how to replace a skill with a newer folder.

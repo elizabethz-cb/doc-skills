@@ -1,6 +1,6 @@
 ---
 name: add-doctype
-description: Builds a new document type folder, with fields, rules and a fictional example, from a Word template file. Use when the user invokes /docs-skills:add-doctype.
+description: Creates a brand-new kind of document from a blank file, with its rules and a made-up sample. Use when the user invokes /docs-skills:add-doctype.
 argument-hint: <new type name> <path to template .docx>
 disable-model-invocation: true
 ---

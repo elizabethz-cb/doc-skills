@@ -86,6 +86,8 @@ A document type is one folder in `skills/drafting-documents/doctypes/`. You do n
 
 **Shortcut:** from the plugin repo, run `/docs-skills:add-doctype <type name> <path to template.docx>`. Claude reads the blank template (you confirm it holds no customer data), proposes the fields and placeholders for your approval, puts the placeholders in a copy, writes the other files and runs the checks above. You review the result in Word. Not yet tried in a real session.
 
+**Replacing the template of an existing type:** from the plugin repo, run `/docs-skills:update-template <type> <path to new template.docx>`. It stops if the type's folder has uncommitted changes (so the old template stays in git), proposes how the placeholders map to the existing fields for your approval, updates `fields.json` and the example, and runs the checks. Documents already drafted keep the old layout, and renaming or removing a field stops old `draft.json` files from building. Not yet tried in a real session.
+
 Tips: type each placeholder in one go (Word sometimes splits text into pieces, which loses formatting inside that paragraph), and keep fonts and headings the way your company wants them, because the tool only fills text.
 
 ## 6. Improve it over time

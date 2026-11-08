@@ -285,7 +285,7 @@ for w in ("draft", "update", "learn"):
     check(f"workflow '{w}' reads the shared folder rules and runs only when invoked",
           "shared/folder-rules.md" in text and "disable-model-invocation: true" in text)
     check(f"README documents /docs-skills:{w}", f"/docs-skills:{w}" in readme)
-for w in ("apply-lessons", "add-doctype"):
+for w in ("apply-lessons", "add-doctype", "update-template"):
     f = ROOT / "skills" / w / "SKILL.md"
     check(f"workflow '{w}' exists, runs only when invoked and documents itself in the README",
           f.exists() and "disable-model-invocation: true" in f.read_text(encoding="utf-8") and f"/docs-skills:{w}" in readme)

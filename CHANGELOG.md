@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.8.0 (draft)
+- New command /docs-skills:update-template, run from the plugin repo: swaps in a new Word template for an existing document type and realigns its fields and example, with your approval before anything changes. Not yet tried in a real Claude Code session.
+
 ## 0.7.0 (draft)
 - New command /docs-skills:add-doctype, run from the plugin repo: builds a new document type folder from a Word template file, with your approval before the template is changed. Not yet tried in a real Claude Code session.
 

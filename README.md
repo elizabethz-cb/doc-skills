@@ -265,6 +265,35 @@ Six commands run the skills for you. Claude Code only (plugin install or `--plug
 
 All three first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. They never write to the plugin.
 
+### Editing by hand and versions
+
+You will often fix Claude's wording or add facts yourself. The rule: **never edit Claude's own files, edit a copy.**
+
+```
+acme/                      start Claude Code here
+  input/                   copies of the customer files
+  output/
+    SOW-v1.docx            Claude's draft: leave untouched
+    SOW-v1.json
+    sow-working.docx       your edited copy: you make it, you save it here
+    diagram.drawio
+```
+
+1. Copy `output/SOW-v1.docx` to `output/sow-working.docx` and edit the copy in Word as much as you like. This is your real document.
+2. Only when new notes arrive: add them to `input/` and run `/docs-skills:update SOW sow-working.docx`. Give the file name, not a path. The file must be in `output/`.
+3. Each run writes the next version, `SOW-v2.docx` and `SOW-v2.json`, then `v3` and so on. It never overwrites an earlier file and never changes your copy. For the next round, edit a copy of the latest version.
+4. When the document is accepted, put the final in `input/` and run `/docs-skills:learn`. It compares the final with the untouched `SOW-v1.docx`, so if you edited v1 itself it has nothing to learn from.
+
+**What carries into the next version.** Each version is built fresh: Claude reads your copy, writes the content into the type's fields, and the template builds a new Word file. Your copy is only read.
+
+| Your edit | In the next version |
+| --- | --- |
+| Reworded text, a new bullet or fact inside an existing section | Kept |
+| Fonts, colours, spacing, merged table cells | Lost: styling comes from the template |
+| A brand-new section | Probably lost or squeezed into another field: there is no field or placeholder for it |
+
+Check each new version against your copy. If you want a layout change or a new section every time, put it in the template (`/docs-skills:update-template`, or add a field and a placeholder). For a small change you can also just ask Claude in chat ("add X to the background") and it builds the next numbered version. Not yet tried in a real session: how well your edits are picked up, and exactly which layout changes survive.
+
 **Plugin-repo commands.** Start Claude Code in the plugin repo and run:
 
 ```

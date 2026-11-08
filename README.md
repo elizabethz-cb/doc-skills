@@ -2,16 +2,29 @@
 
 **New here? Read `START-HERE.md`: a checklist from unzip to first real document.**
 
-Four small Claude skills for customer documents: one drafts SOWs, assessments and any type you add from meeting notes using your own Word templates, one draws architecture diagrams for draw.io, one learns from the accepted result, and an optional one **redacts** customer files.
+A Claude Code plugin for customer documents: four skills that do the work, and six commands that run them for you. Everything is plain files: no servers, no Docker, no database.
+
+**Skills** (Claude uses them when you ask, in Claude Code or chat):
 
 | Skill | What it does |
 | --- | --- |
 | `redacting-customer-files` | **Optional.** Replaces names, IPs, domains, account numbers, emails and keys with placeholders. You run it in a terminal. |
-| `drafting-documents` | Reads the notes, writes a draft, fills the Word template, and lists the open questions. |
+| `drafting-documents` | Reads the notes, writes a draft, fills the Word template, and lists the open questions. SOW and assessment are included; you add more by adding a folder. |
 | `drawing-diagrams` | Writes a draw.io (`.drawio`) architecture or flow diagram from notes, laid out automatically. At summary level it blocks detail you should not show a customer. |
 | `learning-from-accepted-documents` | Compares a draft with its accepted final version and proposes short, generic lessons for you to approve. |
 
-No servers, no Docker, no database. A skill is a folder of instructions, templates and one small Python script. You need Python 3 and `pip install python-docx`.
+**Commands** (Claude Code only, they run only when you type them; details in section 16):
+
+| Command | Run it in | What it does |
+| --- | --- | --- |
+| `/docs-skills:draft` | an engagement folder | First version of a document plus a summary diagram. |
+| `/docs-skills:update` | an engagement folder | Next numbered version after new files arrive. |
+| `/docs-skills:learn` | an engagement folder | Proposes lessons from an accepted final. |
+| `/docs-skills:apply-lessons` | the plugin repo | Adds the approved lessons to a document type's `lessons.md`. |
+| `/docs-skills:add-doctype` | the plugin repo | Builds a new document type from a Word template. |
+| `/docs-skills:update-template` | the plugin repo | Swaps in a new Word template for an existing type. |
+
+You need Python 3 and `pip install python-docx`. Pillow (`pip install pillow`) is needed only for the diagram preview image.
 
 ## 1. Customer data and your Claude plan
 
@@ -24,25 +37,27 @@ Redaction is **optional** in this pack: nothing requires it. Know the trade-off,
 /plugin marketplace add <your-github-user>/docs-skills
 /plugin install docs-skills@docs-skills-marketplace
 ```
-Or just copy the two folders in `skills/` into `.claude/skills/` of a project, or into `~/.claude/skills/` to have them everywhere.
+To try it without installing, start Claude Code with `claude --plugin-dir <path to this repo>`. Copying the four skill folders into `.claude/skills/` of a project (or `~/.claude/skills/`) also works, but then you get the skills only: the six commands need the plugin.
 
-**Chat (claude.ai):** open Customize > Skills, add a skill, and upload `drafting-documents.zip` (made by `python tools/package.py`: the skill folder zipped, with the folder name at the top). Turn on "Code execution and file creation" in Settings. Chat cannot reach your laptop, so you upload the notes you want it to use.
+**Chat (claude.ai):** open Customize > Skills, add a skill, and upload a zip made by `python tools/package.py` (the skill folder zipped, with the folder name at the top; one zip per skill, for example `drafting-documents.zip`). Turn on "Code execution and file creation" in Settings. Chat cannot reach your laptop, so you upload the notes you want it to use. The six commands are not in the zips.
 
 *Not yet tested here: the plugin install and the chat upload. If either complains, check the current Claude Code plugin docs and the skill upload rules (folder name must match the skill name, `SKILL.md` must exist).*
 
 ## 3. Daily use
 
+**In Claude Code**, with the commands (section 16):
+
 ```
-# 1. Put the notes in an engagement folder, for example ~/engagements/acme/notes
+# 1. Make an engagement folder with input/ (copies of the notes, never originals) and output/ (empty).
 #    (Optional: redact first, see section 4.)
-
-# 2. In Claude (Code or chat), with the notes available:
-"Use the drafting-documents skill to draft a SOW from these notes."
-
-# 3. Review the Word file and the open questions. Send the questions to the customer.
-
-# 4. When the document is accepted, let the skills learn from it (section 14).
+# 2. Start Claude Code in that folder and run:
+/docs-skills:draft SOW "Acme Ltd"
+# 3. Review the Word file and the open questions in output/. Send the questions to the customer.
+# 4. Edit the Word file, add new files to input/, then run /docs-skills:update for the next version.
+# 5. When the document is accepted, run /docs-skills:learn, then /docs-skills:apply-lessons (section 14).
 ```
+
+**In chat**, or without the commands, ask directly with the notes available: *"Use the drafting-documents skill to draft a SOW from these notes."*
 
 **Optional redaction commands** (in your own terminal):
 ```
@@ -92,19 +107,22 @@ Tips: type each placeholder in one go (Word sometimes splits text into pieces, w
 
 ## 6. Improve it over time
 
-See `IMPROVING.md`: a five-minute note after each real document, and a monthly tidy-up. Lessons go in `doctypes/<type>/lessons.md`, which Claude reads on every run.
+See `IMPROVING.md`: a five-minute note after each real document, and a monthly tidy-up. Lessons go in `doctypes/<type>/lessons.md`, which Claude reads on every run. `/docs-skills:learn` and `/docs-skills:apply-lessons` do the two steps (section 14).
 
 ## 7. Folder map
 
 ```
 .claude-plugin/              plugin and marketplace files
+shared/folder-rules.md       the folder rules for the engagement commands, written once
 skills/
   redacting-customer-files/  SKILL.md, scripts/redact.py
   drafting-documents/        SKILL.md, shared/rules-common.md, scripts/fill.py
-    doctypes/sow/              template.docx, fields.json, rules.md, lessons.md, example-*
-    doctypes/assessment/       same
+    doctypes/<type>/           template.docx, fields.json, rules.md, lessons.md, example-*
+                               (sow and assessment ship with the pack; one folder per type)
   drawing-diagrams/          SKILL.md, spec-format.md, rules.md, scripts/diagram.py, example-spec.json, example.drawio
   learning-from-accepted-documents/  SKILL.md, scripts/compare.py
+  draft/ update/ learn/      the engagement commands (SKILL.md only)
+  apply-lessons/ add-doctype/ update-template/   the plugin-repo commands (SKILL.md only)
 examples/                    a fictional original and a names.txt to try redaction
 tools/                       lint_skills.py (authoring rules), package.py (zips for chat)
 tests/smoke.py               checks redaction, restore, document types, the detail guard, the learning helper and the lint
@@ -124,10 +142,10 @@ python skills/redacting-customer-files/scripts/redact.py restore <file-or-folder
 python skills/drawing-diagrams/scripts/diagram.py build <spec.json> <out.drawio> [--png preview.png] [--allow-detail]
 python skills/drawing-diagrams/scripts/diagram.py check <spec.json>
 python tools/lint_skills.py          # checks names, descriptions and size of every skill
-python tools/package.py              # makes dist/<skill>.zip for chat upload
+python tools/package.py              # makes dist/<skill>.zip for chat upload (the six commands are left out)
 python tests/smoke.py
 ```
-Each command also has `--help`.
+Each script also has `--help`. The `/docs-skills:...` commands are in section 16.
 
 ## 9. Sharing it with colleagues
 
@@ -152,6 +170,7 @@ Keep **one plugin with many skills**. A new skill is a new folder under `skills/
 - A skill's name and description are all Claude sees until the skill is used, so descriptions say what the skill does and when to use it, in the third person.
 - `SKILL.md` stays short (under 500 lines). Detail lives in other files that it points to: rules, templates and examples.
 - One folder per skill, name identical to the folder.
+- A command you invoke by name is a skill with `disable-model-invocation: true`, so Claude never loads it on its own. The lint leaves these out of the always-loaded count, and `tools/package.py` leaves them out of the chat zips.
 - `tools/lint_skills.py` checks these rules, and `tests/smoke.py` runs it.
 
 ## 11. Where each rule belongs (four layers)
@@ -178,7 +197,7 @@ Claude sees only each skill's name and description until it uses the skill. The 
 - **Keep `lessons.md` short.** It is read on every run. The lint warns above 40 lines.
 - **Measure after each change.** `python tools/lint_skills.py` prints rough estimates (about 4 characters per token): what is always loaded, and what one run reads for each document type. In Claude Code, `/cost` shows real usage for before and after comparisons.
 
-Current estimates: about 270 tokens always loaded for the three skills, about 3,300 tokens for a SOW run and 2,800 for an assessment run.
+Current estimates: about 350 tokens always loaded for the four skills (the six commands add nothing, because they load only when you type them), about 3,200 tokens for a SOW run and 2,700 for an assessment run.
 
 ## 13. Draft and approved
 
@@ -201,8 +220,9 @@ Two kinds of content, with different rules:
 Skills do not learn by themselves. People improve them, and this loop makes that quick and safe:
 
 1. The document is accepted (by the customer or internally). If it has tracked changes, accept them first.
-2. Ask Claude to use `learning-from-accepted-documents` with the draft and the final. `compare.py` prints only what changed, so Claude does not need to read both documents.
-3. Claude ignores customer-specific facts and proposes up to three short, generic lessons. **Read each one**: lessons are shared with everyone who installs the plugin, so they must not contain names, places, numbers or amounts from the documents. Approved lessons go into that document type's `lessons.md`.
+2. In the engagement folder, run `/docs-skills:learn <type> <accepted final>` (or ask Claude to use `learning-from-accepted-documents` with the draft and the final). `compare.py` prints only what changed, so Claude does not need to read both documents.
+3. Claude ignores customer-specific facts and proposes up to three short, generic lessons. **Read each one**: lessons are shared with everyone who installs the plugin, so they must not contain names, places, numbers or amounts from the documents. The command saves the approved ones to `output/lessons-proposed.md`.
+   Then, in the plugin repo, run `/docs-skills:apply-lessons <type> <path to lessons-proposed.md>`. It adds them to that document type's `lessons.md`.
 4. Run `python tests/smoke.py`. It checks that no lesson contains an email, IP address, domain, account number, key or placeholder. It cannot catch a company or person name, so your reading in step 3 matters.
 5. Raise the version, add a `CHANGELOG.md` line, push.
 6. Once a lesson has repeated three times, move it into `rules.md`. For a customer-facing document that is an approval step (section 13).
@@ -213,6 +233,8 @@ What it never does: edit `rules.md`, templates or `fields.json`, or save anythin
 
 The `drawing-diagrams` skill makes a draw.io file from your notes. Claude writes a small spec (boxes, groups, arrows), and `diagram.py` checks it, lays it out and writes the `.drawio` file, so nobody writes coordinates or XML.
 
+`/docs-skills:draft` draws a summary diagram for you. To draw one on its own:
+
 1. Ask Claude: *"Use the drawing-diagrams skill to draw the target architecture from these notes."*
 2. Open `diagram.drawio` at app.diagrams.net or in the draw.io desktop app. Adjust boxes and arrows by hand if you want.
 3. Export a PNG from draw.io and put it in the Word document.
@@ -221,11 +243,11 @@ The `drawing-diagrams` skill makes a draw.io file from your notes. Claude writes
 - **Spec format and rules:** `skills/drawing-diagrams/spec-format.md` and `rules.md`. A working example is `example-spec.json` and its result `example.drawio`.
 - **Limits.** It creates new diagrams only and does not edit existing draw.io files. The preview PNG is a rough drawing made by the script, not what draw.io shows. Arrows are routed by draw.io when it opens the file, so some may overlap and need a drag. The tests check the file's structure (unique ids, arrows point at real boxes, boxes sit inside their groups, no overlaps), but **how the file looks inside draw.io has not been checked here**. AWS icon names (`icon`) are optional and unverified: an empty box means the name is wrong. Putting the picture into the Word template automatically is not built yet.
 
-## 16. Engagement workflows
+## 16. Commands
 
-Three commands that run the skills above on one engagement folder, so you do not paste prompts. Claude Code only (plugin install or `--plugin-dir`), not chat upload. They run only when you type them.
+Six commands run the skills for you. Claude Code only (plugin install or `--plugin-dir`), not chat. Each runs only when you type it, so it adds nothing to what Claude loads every session. All start with `/docs-skills:`.
 
-Make a folder with `input/` (copies of the customer files, never originals) and `output/` (empty), start Claude Code in it, and run:
+**Engagement commands.** Make a folder with `input/` (copies of the customer files, never originals) and `output/` (empty), start Claude Code in it, and run:
 
 ```
 /docs-skills:draft SOW "Acme Ltd"                  # v1 of the document and a summary diagram
@@ -239,6 +261,22 @@ Make a folder with `input/` (copies of the customer files, never originals) and 
 | `update <type> <edited file>` | `drafting-documents` | the next unused `<type>-v<N>.json` and `.docx` |
 | `learn <type> <accepted final>` | `learning-from-accepted-documents` | `lessons-proposed.md`, only lessons you approve |
 
-`/docs-skills:apply-lessons <type> <path to lessons-proposed.md>` is the second step of learning. Run it from the **plugin repo**, not an engagement folder. It checks the lessons are generic, adds them to `doctypes/<type>/lessons.md` and runs the smoke test. You then check `git diff`, raise the version, add a CHANGELOG line, commit and push, so colleagues get the lesson.
+All three first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. They never write to the plugin.
 
-`draft`, `update` and `learn` first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. `learn` never writes to the plugin: `apply-lessons` (above) moves the approved lessons into `doctypes/<type>/lessons.md`. Not yet tried in a real Claude Code session.
+**Plugin-repo commands.** Start Claude Code in the plugin repo and run:
+
+```
+/docs-skills:apply-lessons SOW C:\engagements\acme\output\lessons-proposed.md
+/docs-skills:add-doctype handover C:\Templates\handover.docx
+/docs-skills:update-template sow C:\Templates\new-sow.docx
+```
+
+| Command | What it does |
+| --- | --- |
+| `apply-lessons <type> <path to lessons-proposed.md>` | Second step of learning. Checks the lessons are generic, skips repeats, adds the rest to `doctypes/<type>/lessons.md`, runs the smoke test. |
+| `add-doctype <name> <path to template.docx>` | Section 5 shortcut. You confirm the template holds no customer data, approve the proposed fields and placeholders, and Claude builds the type's folder and runs the checks. |
+| `update-template <type> <path to new template.docx>` | Replaces a type's template. Stops if the type's folder has uncommitted changes, proposes how placeholders map to existing fields, updates `fields.json` and the example, runs the checks. Old drafts keep the old layout, and renaming or removing a field stops old `draft.json` files from building. |
+
+None of these three commits or pushes. Each ends by telling you to review `git diff`, add a CHANGELOG line, raise the version, commit and push.
+
+*None of the six has been tried in a real Claude Code session yet. If one does not appear or run, check `claude plugin validate .` and the current plugin docs.*

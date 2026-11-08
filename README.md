@@ -39,6 +39,8 @@ Redaction is **optional** in this pack: nothing requires it. Know the trade-off,
 ```
 To try it without installing, start Claude Code with `claude --plugin-dir <path to this repo>`. Copying the four skill folders into `.claude/skills/` of a project (or `~/.claude/skills/`) also works, but then you get the skills only: the six commands need the plugin.
 
+**Amazon Quick:** the four skills (not the commands) can be added as skills there. See `AMAZON-QUICK.md`.
+
 **Chat (claude.ai):** open Customize > Skills, add a skill, and upload a zip made by `python tools/package.py` (the skill folder zipped, with the folder name at the top; one zip per skill, for example `drafting-documents.zip`). Turn on "Code execution and file creation" in Settings. Chat cannot reach your laptop, so you upload the notes you want it to use. The six commands are not in the zips.
 
 *Not yet tested here: the plugin install and the chat upload. If either complains, check the current Claude Code plugin docs and the skill upload rules (folder name must match the skill name, `SKILL.md` must exist).*

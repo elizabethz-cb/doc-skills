@@ -1,0 +1,190 @@
+{
+  "name": "sow-data",
+  "label": "Statement of Work - data project",
+  "fields": {
+    "title": {
+      "type": "text",
+      "help": "Short project title, e.g. 'Data lake SOW'."
+    },
+    "customer_name": {
+      "type": "text",
+      "help": "Use the customer placeholder exactly as it appears in the notes."
+    },
+    "document_date": {
+      "type": "text",
+      "help": "Today's date, e.g. 2026-11-03."
+    },
+    "project_name": {
+      "type": "text",
+      "help": "Name of the customer's project or system, as used in the notes."
+    },
+    "current_environment": {
+      "type": "text",
+      "help": "Where the project runs today, e.g. 'on-premises' or a platform name."
+    },
+    "methodology": {
+      "type": "text",
+      "help": "A short paragraph: how the work is organised (phases, reviews, approvals)."
+    },
+    "source_system": {
+      "type": "text",
+      "help": "The data source(s) to extract from."
+    },
+    "storage_target": {
+      "type": "text",
+      "help": "Where the raw and processed data is stored."
+    },
+    "processing_service": {
+      "type": "text",
+      "help": "The service or tool that processes the data."
+    },
+    "catalog_name": {
+      "type": "text",
+      "help": "The data catalog or governance service."
+    },
+    "query_service": {
+      "type": "text",
+      "help": "The service used to query the data."
+    },
+    "processing_schedule": {
+      "type": "text",
+      "help": "How often processing runs, e.g. 'once a day'."
+    },
+    "change_response_days": {
+      "type": "text",
+      "help": "Business days to respond to a change request, e.g. '5'. 'To be confirmed' if not stated."
+    },
+    "hypercare_weeks": {
+      "type": "text",
+      "help": "Hyper-Care period, e.g. '2 weeks'. 'To be confirmed' if not stated."
+    },
+    "support_weeks": {
+      "type": "text",
+      "help": "Support period, e.g. '4 weeks'. 'To be confirmed' if not stated."
+    },
+    "architecture_note": {
+      "type": "text",
+      "help": "One sentence describing the architecture diagram that is added by hand in Word."
+    },
+    "extraction_plan": {
+      "type": "list",
+      "help": "One item per extraction: what, from where, to where, with which service, how often."
+    },
+    "extraction_dod": {
+      "type": "list",
+      "help": "Use cases with their definition of done for the extraction tests."
+    },
+    "processing_dod": {
+      "type": "list",
+      "help": "Use cases with their definition of done for the processing tests."
+    },
+    "consumer_dod": {
+      "type": "list",
+      "help": "Use cases with their definition of done for the data consumer tests."
+    },
+    "volume_assumptions": {
+      "type": "list",
+      "help": "Assumptions about current and expected data volume. 'To be confirmed' if not stated."
+    },
+    "assumptions": {
+      "type": "list",
+      "help": "Other assumptions, because the notes were silent or unclear."
+    },
+    "deliverables": {
+      "type": "list",
+      "help": "Deliverables with their definition of done."
+    },
+    "architecture_assumptions": {
+      "type": "list",
+      "help": "Assumptions behind the architecture diagram."
+    },
+    "milestone_share": {
+      "type": "table",
+      "columns": [
+        "milestone",
+        "percent"
+      ],
+      "help": "Milestones in order with their share of the total project, e.g. '15%'. 'To be confirmed' if not stated."
+    },
+    "effort": {
+      "type": "table",
+      "columns": [
+        "position",
+        "hours"
+      ],
+      "help": "Roles with estimated hours. 'To be confirmed' if not stated."
+    },
+    "data_env_costs": {
+      "type": "table",
+      "columns": [
+        "service",
+        "details",
+        "monthly_cost"
+      ],
+      "help": "One row per AWS service of the data environment. Only costs stated in the notes, otherwise 'To be confirmed'."
+    },
+    "data_env_total": {
+      "type": "text",
+      "help": "Total of the data environment costs, only if every row has a figure. Otherwise 'To be confirmed'."
+    },
+    "shared_env_costs": {
+      "type": "table",
+      "columns": [
+        "service",
+        "details",
+        "monthly_cost"
+      ],
+      "help": "One row per AWS service of the shared environment. Only costs stated in the notes, otherwise 'To be confirmed'."
+    },
+    "shared_env_total": {
+      "type": "text",
+      "help": "Total of the shared environment costs, only if every row has a figure. Otherwise 'To be confirmed'."
+    },
+    "cost_summary": {
+      "type": "table",
+      "columns": [
+        "item",
+        "item_cost",
+        "count",
+        "monthly_cost"
+      ],
+      "help": "Data environment, shared environments and support, one row each."
+    },
+    "cost_total": {
+      "type": "text",
+      "help": "Total monthly cost, only if all figures are known. Otherwise 'To be confirmed'."
+    },
+    "open_questions": {
+      "type": "table",
+      "columns": [
+        "id",
+        "question",
+        "impact",
+        "assumed_meanwhile"
+      ],
+      "help": "impact is one of: price, scope, schedule, design, risk."
+    }
+  },
+  "forbidden_patterns": [
+    {
+      "name": "instance type",
+      "regex": "\\b(?:db\\.)?[a-z]\\d[a-z]{0,2}\\.(?:nano|micro|small|medium|large|\\d*xlarge|metal)\\b"
+    },
+    {
+      "name": "IP address or network range",
+      "regex": "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b"
+    },
+    {
+      "name": "resource count such as '2 x EC2'",
+      "regex": "\\b\\d+\\s*x\\s*(?:ec2|rds|instances?|servers?|nodes?|vms?)\\b"
+    },
+    {
+      "name": "cloud account number",
+      "regex": "(?<!\\d)\\d{12}(?!\\d)"
+    },
+    {
+      "name": "access key",
+      "regex": "\\b(?:AKIA|ASIA)[A-Z0-9]{16}\\b"
+    }
+  ]
+}

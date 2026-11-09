@@ -1,0 +1,164 @@
+{
+  "title": "Sales Insight data lake SOW",
+  "customer_name": "CUSTOMER_001",
+  "document_date": "2026-11-03",
+  "project_name": "Sales Insight",
+  "current_environment": "on-premises",
+  "methodology": "The project runs in milestones, each ending with tests against the agreed definition of done. A design peer review with CUSTOMER_001 takes place before development starts, and each milestone is approved before the next begins.",
+  "source_system": "the ERP (SOURCE_001) and the CRM (SOURCE_002)",
+  "storage_target": "Amazon S3",
+  "processing_service": "AWS Glue",
+  "catalog_name": "AWS Glue Data Catalog",
+  "query_service": "Amazon Athena",
+  "processing_schedule": "once a day",
+  "change_response_days": "5",
+  "hypercare_weeks": "2 weeks",
+  "support_weeks": "4 weeks",
+  "architecture_note": "A data lake on AWS that takes data from the ERP and the CRM, processes it, and serves the existing dashboards through SQL queries.",
+  "extraction_plan": [
+    "Extract the ERP (SOURCE_001) tables in full mode to the raw layer in Amazon S3 using AWS Glue. This will run once a day.",
+    "Extract the CRM (SOURCE_002) data incrementally to the raw layer in Amazon S3 using AWS Glue. This will run every hour."
+  ],
+  "extraction_dod": [
+    "Use case A - done when the daily sales report built from extracted data matches the current report.",
+    "Use case B - done when stock data is available in the raw layer within 2 hours of the change."
+  ],
+  "processing_dod": [
+    "Use case A - done when the processed sales figures match the current Qlik results for the agreed test days.",
+    "Use case B - done when processed stock levels refresh within 2 hours."
+  ],
+  "consumer_dod": [
+    "Use case A - done when the BI tool shows the daily sales report from the data lake through the connector.",
+    "Use case B - done when the stock dashboard shows data no older than 2 hours."
+  ],
+  "volume_assumptions": [
+    "Current data volume is about 40 million rows.",
+    "Data volume is expected to double in two years."
+  ],
+  "assumptions": [
+    "The Qlik scripts provided by CUSTOMER_001 describe the business logic completely.",
+    "The data can be stored in any AWS region until the customer answers the data location question."
+  ],
+  "deliverables": [
+    "Landing zone and data infrastructure - done when the environment passes the agreed security checks.",
+    "Detailed design document - done when approved in the peer review.",
+    "Extraction, processing and consumer layers - done when use cases A and B pass their tests.",
+    "Training and knowledge transfer - done when the CUSTOMER_001 team has attended the sessions."
+  ],
+  "architecture_assumptions": [
+    "One production data environment and one shared environment for security services.",
+    "The BI tool reaches the data lake through a connector, not directly."
+  ],
+  "milestone_share": [
+    {
+      "milestone": "Landing Zone and Infrastructure",
+      "percent": "To be confirmed"
+    },
+    {
+      "milestone": "Design",
+      "percent": "To be confirmed"
+    },
+    {
+      "milestone": "Extraction",
+      "percent": "To be confirmed"
+    },
+    {
+      "milestone": "Processing",
+      "percent": "To be confirmed"
+    },
+    {
+      "milestone": "Prep for Consumers",
+      "percent": "To be confirmed"
+    },
+    {
+      "milestone": "Go-Live",
+      "percent": "To be confirmed"
+    }
+  ],
+  "effort": [
+    {
+      "position": "Solution Architect",
+      "hours": "To be confirmed"
+    },
+    {
+      "position": "Data Architect",
+      "hours": "To be confirmed"
+    },
+    {
+      "position": "Data Engineer",
+      "hours": "To be confirmed"
+    }
+  ],
+  "data_env_costs": [
+    {
+      "service": "S3",
+      "details": "Storage for raw, parsed and curated data",
+      "monthly_cost": "To be confirmed"
+    },
+    {
+      "service": "Glue",
+      "details": "Extract, prepare and transform",
+      "monthly_cost": "To be confirmed"
+    },
+    {
+      "service": "Athena",
+      "details": "Querying the data lake using SQL",
+      "monthly_cost": "To be confirmed"
+    }
+  ],
+  "data_env_total": "To be confirmed",
+  "shared_env_costs": [
+    {
+      "service": "CloudTrail",
+      "details": "Audit logging",
+      "monthly_cost": "To be confirmed"
+    },
+    {
+      "service": "GuardDuty",
+      "details": "Threat detection",
+      "monthly_cost": "To be confirmed"
+    }
+  ],
+  "shared_env_total": "To be confirmed",
+  "cost_summary": [
+    {
+      "item": "Data Environment",
+      "item_cost": "To be confirmed",
+      "count": "1",
+      "monthly_cost": "To be confirmed"
+    },
+    {
+      "item": "Shared environments",
+      "item_cost": "To be confirmed",
+      "count": "1",
+      "monthly_cost": "To be confirmed"
+    },
+    {
+      "item": "Support",
+      "item_cost": "10%",
+      "count": "1",
+      "monthly_cost": "To be confirmed"
+    }
+  ],
+  "cost_total": "To be confirmed",
+  "open_questions": [
+    {
+      "id": "Q1",
+      "question": "Must the data stay in one country or region?",
+      "impact": "design",
+      "assumed_meanwhile": "No restriction on the region."
+    },
+    {
+      "id": "Q2",
+      "question": "What share of the total price should each milestone carry?",
+      "impact": "price",
+      "assumed_meanwhile": "To be confirmed."
+    },
+    {
+      "id": "Q3",
+      "question": "Which AWS budget does CUSTOMER_001 expect for the data environment?",
+      "impact": "price",
+      "assumed_meanwhile": "Costs are shown as to be confirmed until the estimate is made."
+    }
+  ]
+}

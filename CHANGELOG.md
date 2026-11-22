@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.10.1 (draft)
+- Decks: process outputs honour `{"text", "todo"}` items; a section title stops before the cloud art (and warns when it wraps past two lines); a stat's `todo` highlights the value only; a timeline label wider than its bar sits beside it in white (on its left at the end of the grid). The section title was never narrowed by the first attempt, because python-pptx's `slide.shapes.title` finds nothing in this template; titles are now found by type.
+
 ## 0.10.0 (draft)
 - New skill building-decks and command /docs-skills:deck: notes to a branded .pptx from the Cloudbuzz template (assessment deck type), with red-highlighted to-dos. /docs-skills:update and /docs-skills:learn also handle decks (.pptx), and compare.py reads .pptx. Uses the company template unchanged; the template and deck rules are a draft, not approved. Not yet tried in a real Claude Code session; the example deck was checked by rendering it in PowerPoint.
 

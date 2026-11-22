@@ -1,0 +1,17 @@
+{
+  "name": "assessment",
+  "label": "Assessment readout deck",
+  "layouts": {
+    "title": "Title",
+    "section": "Section",
+    "bullets": "Title and Content",
+    "two_column": "Two Content",
+    "component": "Title Only",
+    "closing": "Closing"
+  },
+  "icons": {
+    "analytics": "analytics.png",
+    "workflow": "workflow.png",
+    "platform": "platform.png"
+  }
+}

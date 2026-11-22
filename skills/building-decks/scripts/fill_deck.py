@@ -22,7 +22,7 @@ from pathlib import Path
 try:
     from pptx import Presentation
     from pptx.enum.dml import MSO_LINE, MSO_THEME_COLOR
-    from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE, PP_PLACEHOLDER
+    from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE, MSO_SHAPE_TYPE, PP_PLACEHOLDER
     from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
     from pptx.oxml.ns import qn
     from pptx.util import Emu, Pt
@@ -88,6 +88,11 @@ def estimate_lines(text, width, pt, bold=False):
 
 
 # ---------- template ----------
+
+def title_of(slide):
+    """The title placeholder, found by type: python-pptx's slide.shapes.title needs idx 0, which this template does not use."""
+    return next((p for p in slide.placeholders if p.placeholder_format.type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE)), None)
+
 
 def open_template(path: Path):
     try:
@@ -313,7 +318,7 @@ class Deck:
             par = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
             self.no_bullet(par, align, after)
             for text, fmt in par_runs:
-                self.runs(par, text, todo, **fmt)
+                self.runs(par, text, bool(todo or fmt.get("todo")), **fmt)
         return box
 
     @staticmethod
@@ -424,6 +429,18 @@ class Deck:
 
     def kind_section(self, slide, s):
         self.fill(slide, s, bodies=[[s["kicker"]]])
+        self.clear_of_art(slide, s)
+
+    def clear_of_art(self, slide, s):
+        """Narrow the title so it stops before the layout's cloud picture (the slide only; the layout is untouched)."""
+        art = [sh for sh in slide.slide_layout.shapes if sh.shape_type == MSO_SHAPE_TYPE.PICTURE and sh.width > inch(4)]
+        title = title_of(slide)
+        if not art or title is None:
+            return
+        left, top, height = title.left, title.top, title.height
+        width = max(inch(2), min(title.width, min(a.left for a in art) - inch(0.2) - left))
+        title.left, title.top, title.width, title.height = left, top, width, height
+        self.fit("the section title", s["title"], width / IN, 1.35, 40, bold=True)  # two lines at the template's 40 pt
 
     def kind_bullets(self, slide, s):
         self.fill(slide, s, bodies=[s["bullets"]], bullets=True)
@@ -483,19 +500,20 @@ class Deck:
             self.textbox(slide, 1.75, y, 4.25, 1.35, [[(st["activity"], dict(size=16, color="bg1"))]], name=f"Activity text {i + 1}", todo=todo)
             self.card(slide, 6.35, y + 0.5, 0.45, 0.35, f"Arrow {i + 1}", color="accent1", kind=MSO_SHAPE.RIGHT_ARROW)
             self.card(slide, 6.95, y, 5.75, 1.35, f"Outputs {i + 1}")
-            self.fit(f"step {i + 1} outputs", "\n".join(map(str, st["outputs"])), 5.25, 1.35, 16)
-            self.textbox(slide, 7.25, y, 5.25, 1.35, [[(text_of(o)[0], dict(size=16, color="bg1"))] for o in st["outputs"]],
+            outputs = [text_of(o) for o in st["outputs"]]
+            self.fit(f"step {i + 1} outputs", "\n".join(text for text, _ in outputs), 5.25, 1.35, 16)
+            self.textbox(slide, 7.25, y, 5.25, 1.35, [[(text, dict(size=16, color="bg1", todo=item_todo))] for text, item_todo in outputs],
                          name=f"Outputs text {i + 1}", todo=todo)
 
     def kind_stats(self, slide, s):
         self.heading(slide, s)
         for i, (st, (x, w)) in enumerate(zip(s["stats"], self.columns(len(s["stats"]))), 1):
-            todo = bool(st.get("todo") or s.get("todo"))
+            todo = bool(st.get("todo") or s.get("todo"))  # the value only; the label is marked only by the slide's todo
             self.card(slide, x, 1.55, w, 2.0, f"Stat {i}", radius=0.08)
             self.fit(f"stat {i} value", st["value"], w - 0.6, 1.0, 44, bold=True)
             self.textbox(slide, x + 0.3, 1.75, w - 0.6, 1.0, [[(st["value"], dict(size=44, bold=True, color="bg1"))]], name=f"Stat value {i}", todo=todo)
             self.fit(f"stat {i} label", st["label"], w - 0.6, 0.5, 14)
-            self.textbox(slide, x + 0.3, 2.8, w - 0.6, 0.5, [[(st["label"], dict(size=14, color="bg2"))]], name=f"Stat label {i}", todo=todo)
+            self.textbox(slide, x + 0.3, 2.8, w - 0.6, 0.5, [[(st["label"], dict(size=14, color="bg2"))]], name=f"Stat label {i}", todo=bool(s.get("todo")))
         detail = s.get("detail")
         if detail:
             lines = [detail] if isinstance(detail, str) else detail
@@ -552,10 +570,15 @@ class Deck:
             self.textbox(slide, 0.6, 2.6 + 0.63 * j, 2.0, 0.5, [[(p["name"], dict(size=15, bold=True, color="bg1"))]], name=f"Phase {j + 1} name", todo=todo)
             self.card(slide, x, 2.64 + 0.63 * j, w, 0.42, f"Phase {j + 1} bar", color="accent1", radius=0.06)
             label = p.get("label") or self.date_label(parse_month(p["start"]), parse_month(p["end"]))
-            if w >= len(label) * 11 * 0.6 / 72 + 0.2:
-                self.textbox(slide, x, 2.64 + 0.63 * j, w, 0.42, [[(label, dict(size=11, bold=True, color="tx1"))]], align=PP_ALIGN.CENTER, name=f"Phase {j + 1} dates", todo=todo)
-            else:
-                self.textbox(slide, x + w + 0.1, 2.64 + 0.63 * j, 1.8, 0.42, [[(label, dict(size=11, bold=True, color="bg1"))]], name=f"Phase {j + 1} dates", todo=todo)
+            label_w = len(label) * 11 * 0.6 / 72
+            y_bar = 2.64 + 0.63 * j
+            if w >= label_w + 0.2:
+                self.textbox(slide, x, y_bar, w, 0.42, [[(label, dict(size=11, bold=True, color="tx1"))]], align=PP_ALIGN.CENTER, name=f"Phase {j + 1} dates", todo=todo)
+            elif x + w + 0.1 + label_w <= TIMELINE_X + TIMELINE_W:
+                self.textbox(slide, x + w + 0.1, y_bar, label_w + 0.3, 0.42, [[(label, dict(size=11, bold=True, color="bg1"))]], name=f"Phase {j + 1} dates", todo=todo)
+            else:  # no room to the right at the end of the grid: beside the bar on its left
+                self.textbox(slide, x - 0.1 - label_w - 0.3, y_bar, label_w + 0.3, 0.42, [[(label, dict(size=11, bold=True, color="bg1"))]],
+                             align=PP_ALIGN.RIGHT, name=f"Phase {j + 1} dates", todo=todo)
 
     @staticmethod
     def milestone_date(value):

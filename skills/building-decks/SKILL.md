@@ -46,7 +46,7 @@ This skill turns meeting notes into a branded `.pptx`. Each deck type is a folde
 | `cases` | `title`, `cases` (2 to 3): `customer`, `challenge`, `solution`, `outcome` |
 | `timeline` | `title`, `programme`, `start` (`2027-01`, a quarter's first month), `months` (multiple of 3, default 24), `phases` (up to 6): `name`, `start`, `end`; `milestones` (up to 3): `label`, `date` |
 
-Any slide, card, step, stat, case, phase or milestone can carry `"todo": true`. A list item can be `{"text": "...", "todo": true}`. Icon names are in `fields.json`.
+Any slide, card, step, stat, case, phase or milestone can carry `"todo": true`. A list item can be `{"text": "...", "todo": true}` (also a step's `outputs`). On a stat, `todo` marks the value only. Icon names are in `fields.json`.
 
 ## House style
 

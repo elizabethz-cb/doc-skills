@@ -341,8 +341,8 @@ else:
         check("speaker notes are written", "Fictional example" in prs.slides[0].notes_slide.notes_text_frame.text)
         r = run(FILL_DECK, "build", DECKS / "assessment", DECK_EXAMPLE, out)
         check("an existing deck file is never overwritten", r.returncode == 1 and "Not overwriting" in r.stderr)
-        for label, change, word in (("a card count outside 2 to 3", lambda d: d["slides"][5]["cards"].append(d["slides"][5]["cards"][0]), "cards"),
-                                    ("a timeline that does not start on a quarter", lambda d: d["slides"][10].update(start="2027-02"), "quarter")):
+        for label, change, word in (("a card count outside 2 to 3", lambda d: next(s for s in d["slides"] if s["kind"] == "cards")["cards"].append({"icon": "analytics", "heading": "x", "items": ["y"]}), "cards"),
+                                    ("a timeline that does not start on a quarter", lambda d: next(s for s in d["slides"] if s["kind"] == "timeline").update(start="2027-02"), "quarter")):
             bad = json.loads(json.dumps(example))
             change(bad)
             (tmp / "bad.json").write_text(json.dumps(bad))
@@ -398,6 +398,34 @@ else:
               box(2).left == bar(2).left and colour(2) == MSO_THEME_COLOR.TEXT_1)
         check("timeline: a narrow bar at the end of the grid puts its white label on its left, on the slide",
               box(3).left >= 0 and box(3).left + box(3).width <= bar(3).left and colour(3) == MSO_THEME_COLOR.BACKGROUND_1)
+
+        r, prs = one_slide(tmp, "table", {"kind": "table", "title": "Costs", "columns": ["Option", "Month", "Year"], "rows": [
+            ["A", "$1", "$12"], ["B", "[TBC]", "$3"], {"cells": ["Total", "$2", "$15"], "total": True},
+            {"cells": ["Support", "$0", "$1"], "extra": True}], "bold_columns": ["Year"], "footnotes": ["Note one"]})
+        tables = [sh for sh in prs.slides[0].shapes if sh.has_table] if prs else []
+        check("table slide: a real table with a header, plus a separate detached table for extra rows",
+              len(tables) == 2 and len(tables[0].table.rows) == 4 and len(tables[1].table.rows) == 1
+              and tables[1].top - (tables[0].top + tables[0].height) >= 0.15 * 914400, str([len(x.table.rows) for x in tables]))
+        if len(tables) == 2:
+            main = tables[0].table
+            is_bold = lambda r_, c_: bool(main.cell(r_, c_).text_frame.paragraphs[0].runs[0].font.bold)
+            check("table slide: bold columns, bold total row, plain other cells",
+                  is_bold(1, 2) and is_bold(3, 0) and not is_bold(1, 1), f"{is_bold(1, 2)} {is_bold(3, 0)} {is_bold(1, 1)}")
+            check("table slide: a [bracketed] cell is highlighted, and the table has no table style",
+                  bool(main.cell(2, 1).text_frame.paragraphs[0].runs[0]._r.xpath(".//a:highlight")) and not tables[0]._element.xpath(".//a:tableStyleId"))
+        check("table slide: the footnote is on the slide", "Note one" in " ".join(sh.text_frame.text for sh in prs.slides[0].shapes if sh.has_text_frame))
+        for label, change, word in (("a bold column that is not a column", {"bold_columns": ["Nope"]}, "bold_columns"),
+                                    ("a row with the wrong number of cells", {"rows": [["only one"]]}, "cells")):
+            r, _ = one_slide(tmp, "badtable", {"kind": "table", "title": "T", "columns": ["A", "B"], "rows": [["1", "2"]], **change})
+            check(f"table check rejects {label}", r.returncode == 1 and word in r.stderr, r.stderr)
+
+        r, prs = one_slide(tmp, "headings", {"kind": "bullets", "title": "Groups", "bullets": [
+            {"text": "Group", "heading": True}, "Item one", {"text": "Emphasis", "bold": True}]})
+        pars = [par for sh in prs.slides[0].shapes if sh.has_text_frame and sh.text_frame.text.startswith("Group\n") for par in sh.text_frame.paragraphs]
+        has = lambda par, tag: bool(par._p.xpath(f".//a:{tag}"))
+        check("a heading line is bold with no bullet; a plain line keeps its bullet; a bold line keeps its bullet too",
+              len(pars) == 3 and pars[0].runs[0].font.bold and has(pars[0], "buNone") and not has(pars[0], "buChar")
+              and has(pars[1], "buChar") and not pars[1].runs[0].font.bold and has(pars[2], "buChar") and pars[2].runs[0].font.bold)
 
 print()
 if failures:

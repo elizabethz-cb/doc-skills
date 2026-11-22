@@ -349,6 +349,56 @@ else:
             r = run(FILL_DECK, "build", DECKS / "assessment", tmp / "bad.json", tmp / "bad.pptx")
             check(f"deck check rejects {label}", r.returncode == 1 and word in r.stderr and not (tmp / "bad.pptx").exists(), r.stderr)
 
+    # four fixes made after the first release, one check each
+    from pptx.enum.dml import MSO_THEME_COLOR
+
+    def one_slide(tmp, name, slide):
+        path = tmp / f"{name}.json"
+        path.write_text(json.dumps({"slides": [slide]}))
+        r = run(FILL_DECK, "build", DECKS / "assessment", path, tmp / f"{name}.pptx")
+        return r, (Presentation(str(tmp / f"{name}.pptx")) if r.returncode == 0 else None)
+
+    def marks(slide, prefix):
+        return {rn.text: bool(rn._r.xpath(".//a:highlight")) for sh in slide.shapes if sh.has_text_frame and sh.name.startswith(prefix)
+                for par in sh.text_frame.paragraphs for rn in par.runs}
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        r, prs = one_slide(tmp, "process", {"kind": "process", "title": "How", "steps": [
+            {"activity": "Do it", "outputs": ["Plan", {"text": "Sign-off date", "todo": True}]}]})
+        got = marks(prs.slides[0], "Outputs text") if prs else {}
+        check("process outputs: a todo item is highlighted and listed, its sibling is not",
+              got == {"Plan": False, "Sign-off date": True} and "Sign-off date" in r.stdout, f"{got} {r.stdout[-150:]}")
+
+        r, prs = one_slide(tmp, "section", {"kind": "section", "kicker": "Section 01",
+                                            "title": "Where Example Corp stands today across every server room and every team"})
+        slide = prs.slides[0]
+        cloud = min(sh.left for sh in slide.slide_layout.shapes if sh.shape_type == MSO_SHAPE_TYPE.PICTURE and sh.width > 4 * 914400)
+        title = fill_deck.title_of(slide)
+        check("section title stops before the cloud art", title is not None and title.left + title.width <= cloud)
+        check("a section title that wraps past two lines warns 'may not fit'", "section title may not fit" in r.stdout, r.stdout[-200:])
+
+        r, prs = one_slide(tmp, "stats", {"kind": "stats", "title": "Numbers", "stats": [
+            {"value": "$12k", "label": "per month", "todo": True}, {"value": "300", "label": "customers"}]})
+        got = marks(prs.slides[0], "Stat ")
+        check("stats: a todo highlights the value, not the label",
+              got == {"$12k": True, "per month": False, "300": False, "customers": False}, str(got))
+
+        r, prs = one_slide(tmp, "timeline", {"kind": "timeline", "title": "Plan", "start": "2027-01", "months": 24, "phases": [
+            {"name": "Short", "start": "2027-05", "end": "2027-06"},
+            {"name": "Long", "start": "2027-01", "end": "2027-06"},
+            {"name": "Last", "start": "2028-12", "end": "2028-12"}]})
+        shapes = {sh.name: sh for sh in prs.slides[0].shapes}
+        colour = lambda j: shapes[f"Phase {j} dates"].text_frame.paragraphs[0].runs[0].font.color.theme_color
+        bar = lambda j: shapes[f"Phase {j} bar"]
+        box = lambda j: shapes[f"Phase {j} dates"]
+        check("timeline: a bar narrower than its label gets the label to its right, in white",
+              box(1).left >= bar(1).left + bar(1).width and colour(1) == MSO_THEME_COLOR.BACKGROUND_1)
+        check("timeline: a bar wide enough keeps its label inside, in the dark text colour",
+              box(2).left == bar(2).left and colour(2) == MSO_THEME_COLOR.TEXT_1)
+        check("timeline: a narrow bar at the end of the grid puts its white label on its left, on the slide",
+              box(3).left >= 0 and box(3).left + box(3).width <= bar(3).left and colour(3) == MSO_THEME_COLOR.BACKGROUND_1)
+
 print()
 if failures:
     print(f"{len(failures)} check(s) failed")

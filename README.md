@@ -335,6 +335,7 @@ The `building-decks` skill turns notes into a PowerPoint deck in the company sty
 4. `python tests/smoke.py` builds `examples/deck-example-FICTIONAL.json`, which uses every kind, and checks it.
 
 - **Tables and headings.** Prices go in a `table` slide: a real PowerPoint table with a header row, bold columns you name, highlighted total rows, extra charges in a detached row, and footnotes. In `bullets` and `two_column`, a line can be a bold group heading with no bullet. Both are in the table of kinds in `SKILL.md`.
+- **AWS decks.** `"aws": true` on the title slide puts the Amazon arrow under the title. The image is never drawn by the script: put the file you were given at `skills/building-decks/decktypes/<type>/icons/amazon_arrow.png`. Without it the build stops with a clear message.
 - **Versions.** `deck-v1.pptx`, then `v2`, `v3`: the script refuses to overwrite a file. `/docs-skills:update` makes the next one.
 - **Hand edits.** A deck is rebuilt from `deck.json`, so layout changes made by hand in PowerPoint are lost in the next version, the same as for Word (section 16). Text edits are read and carried over.
 - **Lessons.** `/docs-skills:learn` compares an accepted `.pptx` with `deck-v1.pptx`. `/docs-skills:apply-lessons deck <path>` adds the lessons to `skills/building-decks/lessons.md`.

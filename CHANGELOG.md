@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.12.0 (draft)
+- Decks: `"aws": true` on a title slide places the Amazon arrow (a user-supplied `icons/amazon_arrow.png`, not included yet) under the title, named "AWS arrow" with the alt text "Amazon arrow"; the build stops with a clear message if the image is missing. Lesson added: AWS decks use the arrow on the title slide. Not yet checked with the real image.
+
 ## 0.11.0 (draft)
 - Decks: new `table` slide kind (a real table with a header, bold columns, highlighted totals, a detached extra-charges row and footnotes), and bold group headings without a bullet in `bullets` and `two_column`. Before this, prices had to be added to the .pptx by hand, and a rebuild lost them. Generic deck lessons added to the building-decks lessons.md. Not yet tried in a real Claude Code session.
 

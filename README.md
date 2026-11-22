@@ -2,7 +2,7 @@
 
 **New here? Read `START-HERE.md`: a checklist from unzip to first real document.**
 
-A Claude Code plugin for customer documents: four skills that do the work, and six commands that run them for you. Everything is plain files: no servers, no Docker, no database.
+A Claude Code plugin for customer documents: five skills that do the work, and seven commands that run them for you. Everything is plain files: no servers, no Docker, no database.
 
 **Skills** (Claude uses them when you ask, in Claude Code or chat):
 
@@ -11,20 +11,22 @@ A Claude Code plugin for customer documents: four skills that do the work, and s
 | `redacting-customer-files` | **Optional.** Replaces names, IPs, domains, account numbers, emails and keys with placeholders. You run it in a terminal. |
 | `drafting-documents` | Reads the notes, writes a draft, fills the Word template, and lists the open questions. SOW and assessment are included; you add more by adding a folder. |
 | `drawing-diagrams` | Writes a draw.io (`.drawio`) architecture or flow diagram from notes, laid out automatically. At summary level it blocks detail you should not show a customer. |
-| `learning-from-accepted-documents` | Compares a draft with its accepted final version and proposes short, generic lessons for you to approve. |
+| `building-decks` | Turns the notes into a branded PowerPoint deck from the company template. The slides are drawn by a script, and missing facts become red-highlighted to-dos (section 17). |
+| `learning-from-accepted-documents` | Compares a draft with its accepted final version (Word or PowerPoint) and proposes short, generic lessons for you to approve. |
 
 **Commands** (Claude Code only, they run only when you type them; details in section 16):
 
 | Command | Run it in | What it does |
 | --- | --- | --- |
 | `/docs-skills:draft` | an engagement folder | First version of a document plus a summary diagram. |
-| `/docs-skills:update` | an engagement folder | Next numbered version of the document, the diagram or both, after new files or your edits. |
+| `/docs-skills:deck` | an engagement folder | First version of a branded slide deck. |
+| `/docs-skills:update` | an engagement folder | Next numbered version of the document, deck, diagram or several, after new files or your edits. |
 | `/docs-skills:learn` | an engagement folder | Proposes lessons from an accepted final. |
-| `/docs-skills:apply-lessons` | the plugin repo | Adds the approved lessons to a document type's `lessons.md`. |
+| `/docs-skills:apply-lessons` | the plugin repo | Adds the approved lessons to a document type's (or the deck skill's) `lessons.md`. |
 | `/docs-skills:add-doctype` | the plugin repo | Builds a new document type from a Word template. |
 | `/docs-skills:update-template` | the plugin repo | Swaps in a new Word template for an existing type. |
 
-You need Python 3 and `pip install python-docx`. Pillow (`pip install pillow`) is needed only for the diagram preview image.
+You need Python 3 and `pip install python-docx python-pptx` (python-pptx only for decks). Pillow (`pip install pillow`) is needed only for the diagram preview image.
 
 ## 1. Customer data and your Claude plan
 
@@ -37,9 +39,9 @@ Redaction is **optional** in this pack: nothing requires it. Know the trade-off,
 /plugin marketplace add <your-github-user>/docs-skills
 /plugin install docs-skills@docs-skills-marketplace
 ```
-To try it without installing, start Claude Code with `claude --plugin-dir <path to this repo>`. Copying the four skill folders into `.claude/skills/` of a project (or `~/.claude/skills/`) also works, but then you get the skills only: the six commands need the plugin.
+To try it without installing, start Claude Code with `claude --plugin-dir <path to this repo>`. Copying the five skill folders into `.claude/skills/` of a project (or `~/.claude/skills/`) also works, but then you get the skills only: the six commands need the plugin.
 
-**Amazon Quick:** the four skills (not the commands) can be added as skills there. See `AMAZON-QUICK.md`.
+**Amazon Quick:** the five skills (not the commands) can be added as skills there. See `AMAZON-QUICK.md`.
 
 **Chat (claude.ai):** open Customize > Skills, add a skill, and upload a zip made by `python tools/package.py` (the skill folder zipped, with the folder name at the top; one zip per skill, for example `drafting-documents.zip`). Turn on "Code execution and file creation" in Settings. Chat cannot reach your laptop, so you upload the notes you want it to use. The six commands are not in the zips.
 
@@ -54,6 +56,7 @@ To try it without installing, start Claude Code with `claude --plugin-dir <path 
 #    (Optional: redact first, see section 4.)
 # 2. Start Claude Code in that folder and run:
 /docs-skills:draft SOW "Acme Ltd"
+#    (or /docs-skills:deck assessment "Acme Ltd" for a slide deck)
 # 3. Review the Word file and the open questions in output/. Send the questions to the customer.
 # 4. Edit a copy of the Word file (or the diagram), add new files to input/, then run /docs-skills:update for the next version.
 # 5. When the document is accepted, run /docs-skills:learn, then /docs-skills:apply-lessons (section 14).
@@ -105,6 +108,8 @@ A document type is one folder in `skills/drafting-documents/doctypes/`. You do n
 
 **Replacing the template of an existing type:** from the plugin repo, run `/docs-skills:update-template <type> <path to new template.docx>`. It stops if the type's folder has uncommitted changes (so the old template stays in git), proposes how the placeholders map to the existing fields for your approval, updates `fields.json` and the example, and runs the checks. Documents already drafted keep the old layout, and renaming or removing a field stops old `draft.json` files from building. Not yet tried in a real session.
 
+**Deck types** work the same way: a folder under `skills/building-decks/decktypes/<type>/` with `template.potx`, `fields.json` (the template's layout names and the icon files), `rules.md` and `icons/`. Check it with `python skills/building-decks/scripts/fill_deck.py check skills/building-decks/decktypes/<type>`. No script changes.
+
 Tips: type each placeholder in one go (Word sometimes splits text into pieces, which loses formatting inside that paragraph), and keep fonts and headings the way your company wants them, because the tool only fills text.
 
 ## 6. Improve it over time
@@ -122,10 +127,12 @@ skills/
     doctypes/<type>/           template.docx, fields.json, rules.md, lessons.md, example-*
                                (sow and assessment ship with the pack; one folder per type)
   drawing-diagrams/          SKILL.md, spec-format.md, rules.md, scripts/diagram.py, example-spec.json, example.drawio
+  building-decks/            SKILL.md, lessons.md, scripts/fill_deck.py
+    decktypes/<type>/          template.potx, fields.json, rules.md, icons/ (assessment ships with the pack)
   learning-from-accepted-documents/  SKILL.md, scripts/compare.py
-  draft/ update/ learn/      the engagement commands (SKILL.md only)
+  draft/ deck/ update/ learn/   the engagement commands (SKILL.md only)
   apply-lessons/ add-doctype/ update-template/   the plugin-repo commands (SKILL.md only)
-examples/                    a fictional original and a names.txt to try redaction
+examples/                    a fictional original, a names.txt to try redaction, and a fictional example deck (deck-example-FICTIONAL.json)
 tools/                       lint_skills.py (authoring rules), package.py (zips for chat)
 tests/smoke.py               checks redaction, restore, document types, the detail guard, the learning helper and the lint
 CHANGELOG.md                 one line per release, with approvals
@@ -143,8 +150,10 @@ python skills/redacting-customer-files/scripts/redact.py run <file-or-folder> --
 python skills/redacting-customer-files/scripts/redact.py restore <file-or-folder> --engagement <name> --out <folder>
 python skills/drawing-diagrams/scripts/diagram.py build <spec.json> <out.drawio> [--png preview.png] [--allow-detail]
 python skills/drawing-diagrams/scripts/diagram.py check <spec.json>
+python skills/building-decks/scripts/fill_deck.py build <decktype-folder> <deck.json> <out.pptx>
+python skills/building-decks/scripts/fill_deck.py check <decktype-folder>
 python tools/lint_skills.py          # checks names, descriptions and size of every skill
-python tools/package.py              # makes dist/<skill>.zip for chat upload (the six commands are left out)
+python tools/package.py              # makes dist/<skill>.zip for chat upload (the seven commands are left out)
 python tests/smoke.py
 ```
 Each script also has `--help`. The `/docs-skills:...` commands are in section 16.
@@ -199,7 +208,7 @@ Claude sees only each skill's name and description until it uses the skill. The 
 - **Keep `lessons.md` short.** It is read on every run. The lint warns above 40 lines.
 - **Measure after each change.** `python tools/lint_skills.py` prints rough estimates (about 4 characters per token): what is always loaded, and what one run reads for each document type. In Claude Code, `/cost` shows real usage for before and after comparisons.
 
-Current estimates: about 350 tokens always loaded for the four skills (the six commands add nothing, because they load only when you type them), about 3,200 tokens for a SOW run and 2,700 for an assessment run.
+Current estimates: about 410 tokens always loaded for the five skills (the seven commands add nothing, because they load only when you type them), about 3,200 tokens for a SOW run and 2,700 for an assessment run.
 
 ## 13. Draft and approved
 
@@ -247,23 +256,25 @@ The `drawing-diagrams` skill makes a draw.io file from your notes. Claude writes
 
 ## 16. Commands
 
-Six commands run the skills for you. Claude Code only (plugin install or `--plugin-dir`), not chat. Each runs only when you type it, so it adds nothing to what Claude loads every session. All start with `/docs-skills:`.
+Seven commands run the skills for you. Claude Code only (plugin install or `--plugin-dir`), not chat. Each runs only when you type it, so it adds nothing to what Claude loads every session. All start with `/docs-skills:`.
 
 **Engagement commands.** Make a folder with `input/` (copies of the customer files, never originals) and `output/` (empty), start Claude Code in it, and run:
 
 ```
 /docs-skills:draft SOW "Acme Ltd"                  # v1 of the document and a summary diagram
-/docs-skills:update SOW acme-sow-v1-edited.docx    # next version of the document, the diagram or both
+/docs-skills:deck assessment "Acme Ltd"            # v1 of a slide deck
+/docs-skills:update SOW acme-sow-v1-edited.docx    # next version of the document, deck, diagram or several
 /docs-skills:learn SOW acme-sow-final.docx         # lessons from the accepted final
 ```
 
 | Command | Uses | Writes to `output/` |
 | --- | --- | --- |
 | `draft <type> <customer>` | `drafting-documents`, `drawing-diagrams` | `<type>-v1.json`, `<type>-v1.docx`, `diagram.drawio`, `diagram.json`, `diagram-preview.png` |
-| `update <type> <edited file>` | `drafting-documents`, `drawing-diagrams` | the next unused `<type>-v<N>.json` and `.docx`, and/or `diagram-v<N>.json`, `.drawio` and `-preview.png` |
-| `learn <type> <accepted final>` | `learning-from-accepted-documents` | `lessons-proposed.md`, only lessons you approve |
+| `deck <deck type> <customer>` | `building-decks` | `deck-v1.json`, `deck-v1.pptx` |
+| `update <type> <edited file>` | `drafting-documents`, `building-decks`, `drawing-diagrams` | the next unused `<type>-v<N>.json` and `.docx`, `deck-v<N>.json` and `.pptx`, and/or `diagram-v<N>.json`, `.drawio` and `-preview.png` |
+| `learn <type> <accepted final>` | `learning-from-accepted-documents` | `lessons-proposed.md`, only lessons you approve (a `.docx` or, for a deck, a `.pptx` compared with `deck-v1.pptx`) |
 
-All three first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. They never write to the plugin.
+All four first read `shared/folder-rules.md`, the one place the folder rules are written. They stop if `input/` or `output/` is missing, and ask you to confirm `input/` holds copies. To change a rule, edit that file only. They never write to the plugin.
 
 ### Editing by hand and versions
 
@@ -313,3 +324,17 @@ Check each new version against your copy. If you want a layout change or a new s
 None of these three commits or pushes. Each ends by telling you to review `git diff`, add a CHANGELOG line, raise the version, commit and push.
 
 *None of the six has been tried in a real Claude Code session yet. If one does not appear or run, check `claude plugin validate .` and the current plugin docs.*
+
+## 17. Decks
+
+The `building-decks` skill turns notes into a PowerPoint deck in the company style, the same way `drafting-documents` makes a Word file. Run `/docs-skills:deck <deck type> <customer>` (section 16), or ask for it directly: *"Use the building-decks skill to make a deck from these notes."*
+
+1. Claude writes `deck.json`: one entry per slide, each a **kind** (`title`, `agenda`, `section`, `bullets`, `two_column`, `cards`, `process`, `stats`, `cases`, `timeline`, `closing`) with its fields. The table of kinds is in `skills/building-decks/SKILL.md`.
+2. `fill_deck.py` opens the deck type's `template.potx`, removes its example slides and builds the new ones from the template's layouts. Cards, the process rows, key numbers, case studies and the timeline are drawn in code to match the template's examples. The logo and cloud art stay in the layouts and are never touched.
+3. Anything in `[brackets]`, or marked `"todo": true`, gets a **red highlight** so the team sees what is still open. The script lists them all at the end. Speaker notes go in the slide notes.
+4. `python tests/smoke.py` builds `examples/deck-example-FICTIONAL.json`, which uses every kind, and checks it.
+
+- **Versions.** `deck-v1.pptx`, then `v2`, `v3`: the script refuses to overwrite a file. `/docs-skills:update` makes the next one.
+- **Hand edits.** A deck is rebuilt from `deck.json`, so layout changes made by hand in PowerPoint are lost in the next version, the same as for Word (section 16). Text edits are read and carried over.
+- **Lessons.** `/docs-skills:learn` compares an accepted `.pptx` with `deck-v1.pptx`. `/docs-skills:apply-lessons deck <path>` adds the lessons to `skills/building-decks/lessons.md`.
+- **Limits.** Text that is too long for its box is only flagged as a warning, so look at the slides: render them in PowerPoint or LibreOffice. The slide kinds fit the "assessment" template; another template may need its own layout names in `fields.json`. Not yet tried in a real Claude Code session.

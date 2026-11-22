@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.10.0 (draft)
+- New skill building-decks and command /docs-skills:deck: notes to a branded .pptx from the Cloudbuzz template (assessment deck type), with red-highlighted to-dos. /docs-skills:update and /docs-skills:learn also handle decks (.pptx), and compare.py reads .pptx. Uses the company template unchanged; the template and deck rules are a draft, not approved. Not yet tried in a real Claude Code session; the example deck was checked by rendering it in PowerPoint.
+
 ## 0.9.0 (draft)
 - /docs-skills:update now asks what to update (document, diagram or both) and can rebuild the diagram as a numbered version from your edited .drawio or your instructions. /docs-skills:draft also saves the diagram spec. Not yet tried in a real Claude Code session.
 

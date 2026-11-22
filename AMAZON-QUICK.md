@@ -1,6 +1,6 @@
 # Using the skills in Amazon Quick (desktop)
 
-Amazon Quick takes **skills**: a folder with a `SKILL.md` at its root. It has no plugins or marketplaces, so you **cannot install this plugin** there. What you can add are the four skills. The six `/docs-skills:...` commands stay in Claude Code.
+Amazon Quick takes **skills**: a folder with a `SKILL.md` at its root. It has no plugins or marketplaces, so you **cannot install this plugin** there. What you can add are the five skills. The seven `/docs-skills:...` commands stay in Claude Code.
 
 Based on the Amazon Quick user guide ([Skills](https://docs.aws.amazon.com/quick/latest/userguide/skills-desktop.html), [usage limits](https://docs.aws.amazon.com/quick/latest/userguide/usage-limits-desktop.html)). **Not yet tried here.** Steps marked *(unverified)* are not in those pages.
 
@@ -8,16 +8,16 @@ Based on the Amazon Quick user guide ([Skills](https://docs.aws.amazon.com/quick
 
 | In this repo | In Quick |
 | --- | --- |
-| `drafting-documents`, `drawing-diagrams`, `learning-from-accepted-documents`, `redacting-customer-files` | Add each as a skill (below). Each folder is self-contained. |
-| `draft`, `update`, `learn`, `apply-lessons`, `add-doctype`, `update-template` | Not available. They need the Claude Code plugin (`/docs-skills:` names, `${CLAUDE_PLUGIN_ROOT}`). Do not add them. |
+| `drafting-documents`, `building-decks`, `drawing-diagrams`, `learning-from-accepted-documents`, `redacting-customer-files` | Add each as a skill (below). Each folder is self-contained. |
+| `draft`, `deck`, `update`, `learn`, `apply-lessons`, `add-doctype`, `update-template` | Not available. They need the Claude Code plugin (`/docs-skills:` names, `${CLAUDE_PLUGIN_ROOT}`). Do not add them. |
 | Python scripts (`fill.py`, `diagram.py`, `compare.py`) | The docs list "code execution" as a built-in skill and say local code execution is a **desktop** feature. So the desktop app can probably run them if Python and `python-docx` are installed on your machine *(unverified)*. If it cannot, the skills give you the draft as text and say the Word file was not built. |
 
 Where: you manage skills in the **desktop** app. On mobile, skills run in your conversations but you cannot manage them there. The pages do not say whether the web version shows or manages skills.
 
 ## Before you start
 
-- Install Python 3 and `pip install python-docx` on the machine where the Quick desktop app runs. Add `pillow` only for the diagram preview.
-- A skill is limited to 6 MB and a reference file to 50 MB. The four folders are well under that (about 350 KB for `drafting-documents`, less for the rest).
+- Install Python 3 and `pip install python-docx python-pptx` (python-pptx only for decks) on the machine where the Quick desktop app runs. Add `pillow` only for the diagram preview.
+- A skill is limited to 6 MB and a reference file to 50 MB. The folders are under that: about 350 KB for `drafting-documents`, about 3.3 MB for `building-decks` (it holds the PowerPoint template), less for the rest.
 - Quick is a different service from Claude: check your organisation's data policy before putting customer material in it (README section 1).
 - Add the folders as they are. Open `skills/drafting-documents/doctypes/` first and check it holds only the document types you want colleagues to get.
 
@@ -26,7 +26,7 @@ Where: you manage skills in the **desktop** app. On mobile, skills run in your c
 1. In Amazon Quick, open **Customize > Skills** and choose **Create**.
 2. Choose **From folder**, and select one skill folder, for example `skills/drafting-documents`. The folder must have `SKILL.md` at its root.
 3. Review and edit the skill, then save it. It appears under **My skills**.
-4. Repeat for `drawing-diagrams` and `learning-from-accepted-documents`. Add `redacting-customer-files` only if you want it; Claude must never be given the original files to redact, so keep running the script yourself.
+4. Repeat for `building-decks`, `drawing-diagrams` and `learning-from-accepted-documents`. Add `redacting-customer-files` only if you want it; Claude must never be given the original files to redact, so keep running the script yourself.
 5. **Publish** each skill. Changes are saved to a draft and do not affect how the skill runs until you publish. Publishing does not share it.
 
 Prefer **From folder** over a zip: the pages do not say whether a zip needs the folder name at the top *(unverified)*. If you use one, `python tools/package.py` makes `dist/<skill>.zip` the same way as for chat.

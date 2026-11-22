@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke test for the whole pack. Run:  python tests/smoke.py   (needs python-docx)"""
+"""Smoke test for the whole pack. Run:  python tests/smoke.py   (needs python-docx and python-pptx)"""
 import json
 import os
 import subprocess
@@ -274,7 +274,7 @@ import re
 
 skill_names = {p.name for p in (ROOT / "skills").iterdir() if p.is_dir()}
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
-for w in ("draft", "update", "learn"):
+for w in ("draft", "update", "learn", "deck"):
     f = ROOT / "skills" / w / "SKILL.md"
     check(f"workflow '{w}' exists", f.exists())
     if not f.exists():
@@ -294,6 +294,60 @@ texts = {p: p.read_text(encoding="utf-8", errors="ignore") for p in ROOT.rglob("
 for line in rule_lines:
     where = [p.name for p, t in texts.items() if line in t]
     check(f"folder rule '{line[:30]}...' is written in exactly one file", where == ["folder-rules.md"], str(where))
+
+# 6. decks: the deck type builds the fictional example deck, which uses every slide kind
+import importlib.util
+
+DECKS = ROOT / "skills/building-decks/decktypes"
+FILL_DECK = ROOT / "skills/building-decks/scripts/fill_deck.py"
+DECK_EXAMPLE = ROOT / "examples/deck-example-FICTIONAL.json"
+try:
+    from pptx import Presentation
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+except ImportError:
+    check("python-pptx is installed (pip install python-pptx)", False)
+else:
+    spec = importlib.util.spec_from_file_location("fill_deck", FILL_DECK)
+    fill_deck = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fill_deck)
+    for d in sorted(p for p in DECKS.iterdir() if p.is_dir()):
+        r = run(FILL_DECK, "check", d)
+        check(f"decktype '{d.name}' check", r.returncode == 0, r.stderr.strip())
+    example = json.loads(DECK_EXAMPLE.read_text(encoding="utf-8"))
+    check("the example deck uses every slide kind", {s["kind"] for s in example["slides"]} == set(fill_deck.KINDS))
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        out = tmp / "deck-v1.pptx"
+        r = run(FILL_DECK, "build", DECKS / "assessment", DECK_EXAMPLE, out)
+        check("example deck builds without warnings", r.returncode == 0 and "Warning" not in r.stdout, r.stderr.strip() + r.stdout[-300:])
+        prs = Presentation(str(out))
+        check("deck opens and has one slide per slide in the JSON", len(prs.slides) == len(example["slides"]), f"{len(prs.slides)} slides")
+        loose, marked = [], 0
+        for n, slide in enumerate(prs.slides, 1):
+            for shape in slide.shapes:
+                if shape.has_text_frame:
+                    for par in shape.text_frame.paragraphs:
+                        for run_ in par.runs:
+                            highlighted = bool(run_._r.xpath(".//a:highlight/a:srgbClr[@val='FF0000']"))
+                            marked += highlighted
+                            if re.search(r"[\[\]]", run_.text) and not highlighted:
+                                loose.append(f"slide {n}: {run_.text}")
+        check("no leftover [placeholders] except red-highlighted to-dos", not loose and marked >= 1, str(loose))
+        logo = {s.image.sha1 for s in fill_deck.open_template(DECKS / "assessment/template.potx").slide_layouts.get_by_name("Title Only").shapes
+                if s.shape_type == MSO_SHAPE_TYPE.PICTURE}
+        missing = [n for n, s in enumerate(prs.slides, 1)
+                   if not any(sh.shape_type == MSO_SHAPE_TYPE.PICTURE and sh.image.sha1 in logo for sh in s.slide_layout.shapes)]
+        check("the template's logo is on the layout of every slide", not missing, f"slides {missing}")
+        check("speaker notes are written", "Fictional example" in prs.slides[0].notes_slide.notes_text_frame.text)
+        r = run(FILL_DECK, "build", DECKS / "assessment", DECK_EXAMPLE, out)
+        check("an existing deck file is never overwritten", r.returncode == 1 and "Not overwriting" in r.stderr)
+        for label, change, word in (("a card count outside 2 to 3", lambda d: d["slides"][5]["cards"].append(d["slides"][5]["cards"][0]), "cards"),
+                                    ("a timeline that does not start on a quarter", lambda d: d["slides"][10].update(start="2027-02"), "quarter")):
+            bad = json.loads(json.dumps(example))
+            change(bad)
+            (tmp / "bad.json").write_text(json.dumps(bad))
+            r = run(FILL_DECK, "build", DECKS / "assessment", tmp / "bad.json", tmp / "bad.pptx")
+            check(f"deck check rejects {label}", r.returncode == 1 and word in r.stderr and not (tmp / "bad.pptx").exists(), r.stderr)
 
 print()
 if failures:

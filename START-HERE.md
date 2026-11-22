@@ -12,13 +12,13 @@
 Rough time is for one person who has done none of this yet.
 
 ### Step 1. Get it running locally (30 minutes)
-1. Unzip, and check you have Python 3 and `pip install python-docx`.
+1. Unzip, and check you have Python 3 and `pip install python-docx python-pptx` (python-pptx is for decks).
 2. `python tests/smoke.py` should end with "All checks passed".
 3. Create a **private** repo on GitHub (use the account that has access, or your clone and push will fail), push this folder to `main`. While it is only you, commit straight to `main`.
 
 ### Step 2. Load it as a plugin (30 minutes)
 1. In this folder, start Claude Code with `claude --plugin-dir .` to load the plugin without installing it.
-2. Check that the three skills are listed (`/skills`, or ask Claude which skills it has).
+2. Check that the five skills are listed (`/skills`, or ask Claude which skills it has), and that typing `/docs-skills:` shows the seven commands (README section 16).
 3. Try it: *"Use the drafting-documents skill to draft a SOW from skills/drafting-documents/doctypes/sow/example-notes.md"*. Open the Word file it produces.
 4. If the plugin does not load, run `claude plugin validate .`, read what it says, and fix `.claude-plugin/plugin.json` and `marketplace.json` (put your name in both). This part is untested, so expect to adjust.
 
@@ -38,8 +38,8 @@ Follow README section 5. Copy `assessment` (or the type you need), rename it, ed
 
 ### Step 6. First learning loop (30 minutes)
 1. When the document from step 4 is accepted, accept any tracked changes in the final.
-2. Ask Claude to use `learning-from-accepted-documents` with the draft and the final.
-3. Read each proposed lesson. Keep only generic ones (no names, numbers, amounts). They go into `lessons.md`.
+2. In the engagement folder, run `/docs-skills:learn <type> <final file>` (or ask Claude to use `learning-from-accepted-documents` with the draft and the final).
+3. Read each proposed lesson. Keep only generic ones (no names, numbers, amounts). They are saved to `output/lessons-proposed.md`. Then, in the plugin repo, run `/docs-skills:apply-lessons <type> <that file>` to add them to `lessons.md`.
 4. `python tests/smoke.py`, raise the version in `.claude-plugin/plugin.json`, add a `CHANGELOG.md` line, push.
 
 ### Step 7. One colleague (30 minutes)
@@ -50,6 +50,8 @@ Ask one colleague to add your repo as a marketplace and install the plugin (READ
 - Installing the plugin from a marketplace, and updating it.
 - Uploading the skills in chat.
 - The learning skill on a real accepted document.
+- The slide deck skill (`/docs-skills:deck`) on real notes and a look at the result in PowerPoint.
+- The seven `/docs-skills:` commands in a real Claude Code session.
 - Your real company template: placeholders, fonts, tables and layout.
 - How the generated `.drawio` file looks when opened in draw.io (open `skills/drawing-diagrams/example.drawio` once and check it).
 

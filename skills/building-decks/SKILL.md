@@ -35,7 +35,8 @@ This skill turns meeting notes into a branded `.pptx`. Each deck type is a folde
 
 | kind | fields |
 | --- | --- |
-| `title`, `closing` | `title`, `subtitle` |
+| `title` | `title`, `subtitle`, `aws` (`true` puts the Amazon arrow under the title; needs `icons/amazon_arrow.png` in the deck type, an image the user supplies) |
+| `closing` | `title`, `subtitle` |
 | `section` | `kicker` ("Section 01"), `title` |
 | `agenda` | `title`, `items` (1 to 5) |
 | `bullets` | `title`, `bullets` (1 to 8) |

@@ -39,7 +39,7 @@ ANCHOR = {"t": MSO_ANCHOR.TOP, "ctr": MSO_ANCHOR.MIDDLE, "b": MSO_ANCHOR.BOTTOM}
 LAYOUT_KEYS = ("title", "section", "bullets", "two_column", "component", "closing")
 # kind: (layout key, allowed keys besides kind/notes/todo, show slide number)
 KINDS = {
-    "title": ("title", {"title", "subtitle"}, False),
+    "title": ("title", {"title", "subtitle", "aws"}, False),
     "agenda": ("component", {"title", "items"}, True),
     "section": ("section", {"kicker", "title"}, True),
     "bullets": ("bullets", {"title", "bullets"}, True),
@@ -53,6 +53,7 @@ KINDS = {
     "closing": ("closing", {"title", "subtitle"}, False),
 }
 TIMELINE_X, TIMELINE_W = 2.8, 9.9
+AWS_ARROW = "amazon_arrow.png"  # in the deck type's icons/, supplied by the user: never drawn here
 
 
 # ---------- small helpers ----------
@@ -151,6 +152,8 @@ def check_deck(defn: dict, deck: dict) -> list:
         for key in s:
             if key not in KINDS[kind][1] | {"kind", "notes", "todo"}:
                 problems.append(f"{where} ({kind}): unknown field '{key}'")
+        if "aws" in s and not isinstance(s["aws"], bool):
+            problems.append(f"{where}: 'aws' must be true or false")
         need = {"title"} if kind not in ("section",) else {"title", "kicker"}
         for key in need:
             if not isinstance(s.get(key), str) or not s[key].strip():
@@ -447,6 +450,18 @@ class Deck:
 
     def kind_title(self, slide, s):
         self.fill(slide, s, bodies=[[s.get("subtitle", "")]])
+        if s.get("aws"):
+            self.aws_arrow(slide)
+
+    def aws_arrow(self, slide):
+        """The Amazon arrow under the title, left-aligned with it, at its own aspect ratio."""
+        pic = slide.shapes.add_picture(str(self.deck_dir / "icons" / AWS_ARROW), inch(0.62), inch(4.6), width=inch(1.9))
+        pic.name = "AWS arrow"
+        pic._element.xpath(".//p:cNvPr")[0].set("descr", "Amazon arrow")
+        subtitle = [p for p in slide.placeholders if p.placeholder_format.type == PP_PLACEHOLDER.SUBTITLE or
+                    (p.placeholder_format.type == PP_PLACEHOLDER.BODY and p.top > pic.top)]
+        if subtitle and pic.top + pic.height > min(p.top for p in subtitle) - inch(0.05):
+            self.warnings.append(f"slide {self.n}: the AWS arrow may overlap the subtitle (the image is taller than expected)")
 
     kind_closing = kind_title
 
@@ -722,6 +737,8 @@ def cmd_build(args) -> int:
     except (OSError, json.JSONDecodeError) as exc:
         return report("Cannot read the deck", [str(exc)])
     problems = check_deck(defn, deck)
+    if any(s.get("aws") for s in deck.get("slides", [])) and not (deck_dir / "icons" / AWS_ARROW).exists():
+        problems.append(f"a title slide has \"aws\": true, but icons/{AWS_ARROW} is not in the deck type: add the Amazon arrow image you were given")
     if problems:
         return report("The deck needs fixing before it can be built", problems)
     if out.exists():

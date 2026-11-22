@@ -427,6 +427,51 @@ else:
               len(pars) == 3 and pars[0].runs[0].font.bold and has(pars[0], "buNone") and not has(pars[0], "buChar")
               and has(pars[1], "buChar") and not pars[1].runs[0].font.bold and has(pars[2], "buChar") and pars[2].runs[0].font.bold)
 
+    # the Amazon arrow image is supplied by the user, so these checks use a synthetic stand-in in a temp copy of the deck type
+    import shutil
+    import struct
+    import zlib
+
+    def png(width, height, rgba):
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+        raw = zlib.compress((b"\x00" + bytes(rgba) * width) * height)
+        return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)) + chunk(b"IDAT", raw) + chunk(b"IEND", b"")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        copy = tmp / "assessment"
+        shutil.copytree(DECKS / "assessment", copy, ignore=shutil.ignore_patterns("amazon_arrow.png"))
+        (tmp / "aws.json").write_text(json.dumps({"slides": [{"kind": "title", "title": "AWS assessment", "subtitle": "Sub", "aws": True}]}))
+        r = run(FILL_DECK, "build", copy, tmp / "aws.json", tmp / "none.pptx")
+        check("an AWS title slide without the arrow image gives a clear error", r.returncode == 1 and "amazon_arrow.png" in r.stderr, r.stderr)
+        (copy / "icons" / "amazon_arrow.png").write_bytes(png(380, 110, (255, 153, 0, 255)))
+        r = run(FILL_DECK, "build", copy, tmp / "aws.json", tmp / "aws.pptx")
+        check("an AWS title slide builds without warnings", r.returncode == 0 and "Warning" not in r.stdout, r.stderr + r.stdout)
+        slide = Presentation(str(tmp / "aws.pptx")).slides[0]
+        arrow = next((sh for sh in slide.shapes if sh.name == "AWS arrow"), None)
+        check("the arrow is named 'AWS arrow' and has the alt text 'Amazon arrow'",
+              arrow is not None and arrow._element.xpath(".//p:cNvPr/@descr") == ["Amazon arrow"])
+        if arrow is not None:
+            near = lambda a, inches: abs(a - inches * 914400) < 1500
+            check("the arrow is at x 0.62in, y 4.6in, 1.9in wide, and keeps its aspect ratio",
+                  near(arrow.left, 0.62) and near(arrow.top, 4.6) and near(arrow.width, 1.9) and abs(arrow.height / arrow.width - 110 / 380) < 0.01,
+                  f"{arrow.left / 914400:.2f} {arrow.top / 914400:.2f} {arrow.width / 914400:.2f} {arrow.height / 914400:.2f}")
+            box = lambda sh: (sh.left, sh.top, sh.left + sh.width, sh.top + sh.height)
+            apart = lambda a, b: a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]
+            others = [sh for sh in slide.placeholders] + [sh for sh in slide.slide_layout.shapes if sh.shape_type == MSO_SHAPE_TYPE.PICTURE]
+            check("the arrow does not overlap the title, the subtitle or the layout's logo and cloud art",
+                  all(apart(box(arrow), box(sh)) for sh in others), str([sh.name for sh in others if not apart(box(arrow), box(sh))]))
+        (tmp / "plain.json").write_text(json.dumps({"slides": [{"kind": "title", "title": "No arrow", "subtitle": "Sub"}]}))
+        r = run(FILL_DECK, "build", copy, tmp / "plain.json", tmp / "plain.pptx")
+        check("a title slide without aws has no arrow, even when the image is in the deck type",
+              r.returncode == 0 and not any(sh.name == "AWS arrow" for sh in Presentation(str(tmp / "plain.pptx")).slides[0].shapes), r.stderr)
+        for label, slide_spec, word in (("aws on a slide kind that does not take it", {"kind": "section", "kicker": "S", "title": "T", "aws": True}, "aws"),
+                                        ("aws that is not true or false", {"kind": "title", "title": "T", "aws": "yes"}, "true or false")):
+            (tmp / "badaws.json").write_text(json.dumps({"slides": [slide_spec]}))
+            r = run(FILL_DECK, "build", copy, tmp / "badaws.json", tmp / "badaws.pptx")
+            check(f"deck check rejects {label}", r.returncode == 1 and word in r.stderr, r.stderr)
+
 print()
 if failures:
     print(f"{len(failures)} check(s) failed")

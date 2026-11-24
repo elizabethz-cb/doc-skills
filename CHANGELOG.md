@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.13.0 (draft)
+- New document type `hld`: a High-Level Design of at most 5 pages for non-technical managers, built on the Cloudbuzz sow-data template (Aptos, purple headings). Template and rules are a draft, not approved.
+
 ## 0.12.0 (draft)
 - Decks: `"aws": true` on a title slide places the Amazon arrow (a user-supplied `icons/amazon_arrow.png`, not included yet) under the title, named "AWS arrow" with the alt text "Amazon arrow"; the build stops with a clear message if the image is missing. Lesson added: AWS decks use the arrow on the title slide. Not yet checked with the real image.
 

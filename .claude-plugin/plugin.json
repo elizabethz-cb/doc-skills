@@ -1,7 +1,7 @@
 {
   "name": "docs-skills",
   "description": "Skills and commands to draft customer documents and slide decks from meeting notes, draw architecture diagrams, and learn from accepted documents. Redacting customer files is optional.",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "author": {
     "name": "ez"
   }

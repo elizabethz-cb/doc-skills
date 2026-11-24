@@ -2,6 +2,9 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.13.1 (draft)
+- hld template: six styles (List Paragraph, Table Paragraph, Body Text, their linked character styles for the first and third, and Heading 3 Char) used fixed Tahoma, Arial or Times New Roman; they now use the theme font (Aptos). Footer unchanged. Example output rebuilt. Still a draft.
+
 ## 0.13.0 (draft)
 - New document type `hld`: a High-Level Design of at most 5 pages for non-technical managers, built on the Cloudbuzz sow-data template (Aptos, purple headings). Template and rules are a draft, not approved.
 

@@ -4,7 +4,7 @@
   python fill_deck.py build <decktype-dir> <deck.json> <out.pptx>
   python fill_deck.py check <decktype-dir>
 
-Slide kinds: title, agenda, section, bullets, two_column, cards, process, stats, cases, timeline, closing.
+Slide kinds: title, agenda, section, bullets, two_column, cards, process, stats, table, cases, timeline, closing.
 Any text wrapped in [brackets], or inside an element marked "todo": true, gets a red highlight.
 Needs only python-pptx.
 """
@@ -22,7 +22,7 @@ from pathlib import Path
 try:
     from pptx import Presentation
     from pptx.enum.dml import MSO_LINE, MSO_THEME_COLOR
-    from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE, PP_PLACEHOLDER
+    from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE, MSO_SHAPE_TYPE, PP_PLACEHOLDER
     from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
     from pptx.oxml.ns import qn
     from pptx.util import Emu, Pt
@@ -39,7 +39,7 @@ ANCHOR = {"t": MSO_ANCHOR.TOP, "ctr": MSO_ANCHOR.MIDDLE, "b": MSO_ANCHOR.BOTTOM}
 LAYOUT_KEYS = ("title", "section", "bullets", "two_column", "component", "closing")
 # kind: (layout key, allowed keys besides kind/notes/todo, show slide number)
 KINDS = {
-    "title": ("title", {"title", "subtitle"}, False),
+    "title": ("title", {"title", "subtitle", "aws"}, False),
     "agenda": ("component", {"title", "items"}, True),
     "section": ("section", {"kicker", "title"}, True),
     "bullets": ("bullets", {"title", "bullets"}, True),
@@ -47,11 +47,13 @@ KINDS = {
     "cards": ("component", {"title", "cards"}, True),
     "process": ("component", {"title", "steps"}, True),
     "stats": ("component", {"title", "stats", "detail"}, True),
+    "table": ("component", {"title", "columns", "rows", "bold_columns", "footnotes"}, True),
     "cases": ("component", {"title", "cases"}, True),
     "timeline": ("component", {"title", "programme", "start", "months", "phases", "milestones"}, True),
     "closing": ("closing", {"title", "subtitle"}, False),
 }
 TIMELINE_X, TIMELINE_W = 2.8, 9.9
+AWS_ARROW = "amazon_arrow.png"  # in the deck type's icons/, supplied by the user: never drawn here
 
 
 # ---------- small helpers ----------
@@ -88,6 +90,11 @@ def estimate_lines(text, width, pt, bold=False):
 
 
 # ---------- template ----------
+
+def title_of(slide):
+    """The title placeholder, found by type: python-pptx's slide.shapes.title needs idx 0, which this template does not use."""
+    return next((p for p in slide.placeholders if p.placeholder_format.type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE)), None)
+
 
 def open_template(path: Path):
     try:
@@ -145,6 +152,8 @@ def check_deck(defn: dict, deck: dict) -> list:
         for key in s:
             if key not in KINDS[kind][1] | {"kind", "notes", "todo"}:
                 problems.append(f"{where} ({kind}): unknown field '{key}'")
+        if "aws" in s and not isinstance(s["aws"], bool):
+            problems.append(f"{where}: 'aws' must be true or false")
         need = {"title"} if kind not in ("section",) else {"title", "kicker"}
         for key in need:
             if not isinstance(s.get(key), str) or not s[key].strip():
@@ -246,7 +255,25 @@ def check_timeline(s, where, defn):
     return problems
 
 
-CHECKS = {"agenda": check_agenda, "bullets": check_bullets, "two_column": check_two_column, "cards": check_cards,
+def check_table(s, where, defn):
+    problems = need_list(s, "columns", where, 2, 7) + need_list(s, "rows", where, 1, 7)
+    cols = s.get("columns") if isinstance(s.get("columns"), list) else []
+    for name in s.get("bold_columns", []):
+        if name not in cols:
+            problems.append(f"{where}: bold_columns names '{name}', which is not a column")
+    for i, row in enumerate(s.get("rows") if isinstance(s.get("rows"), list) else [], 1):
+        cells = row.get("cells") if isinstance(row, dict) else row
+        if not isinstance(cells, list) or len(cells) != len(cols):
+            problems.append(f"{where} row {i}: needs {len(cols)} cells, one per column")
+        if isinstance(row, dict) and row.get("total") and row.get("extra"):
+            problems.append(f"{where} row {i}: cannot be both a total and an extra row")
+    notes = s.get("footnotes", [])
+    if not isinstance(notes, list) or len(notes) > 3:
+        problems.append(f"{where}: 'footnotes' must be a list of at most 3")
+    return problems
+
+
+CHECKS = {"table": check_table, "agenda": check_agenda, "bullets": check_bullets, "two_column": check_two_column, "cards": check_cards,
           "process": check_process, "stats": check_stats, "cases": check_cases, "timeline": check_timeline}
 
 
@@ -313,7 +340,7 @@ class Deck:
             par = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
             self.no_bullet(par, align, after)
             for text, fmt in par_runs:
-                self.runs(par, text, todo, **fmt)
+                self.runs(par, text, bool(todo or fmt.get("todo")), **fmt)
         return box
 
     @staticmethod
@@ -384,12 +411,16 @@ class Deck:
                 tf.vertical_anchor = ANCHOR[anchor]
             for i, line in enumerate(lines):
                 text, item_todo = text_of(line)
+                opts = line if isinstance(line, dict) else {}
+                heading = bool(opts.get("heading"))  # a group heading: bold, no bullet
                 par = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
-                if bullets and ph not in titles:
+                if bullets and ph not in titles and not heading:
                     self.bullet(par)
                 else:
-                    self.no_bullet(par, PP_ALIGN.LEFT)
-                self.runs(par, text, bool(s.get("todo")) or item_todo)
+                    self.no_bullet(par, PP_ALIGN.LEFT, after=8 if heading else None)
+                    if heading and i:
+                        par.space_before = Pt(10)
+                self.runs(par, text, bool(s.get("todo")) or item_todo, **({"bold": True} if heading or opts.get("bold") else {}))
 
     @staticmethod
     def bullet(par):
@@ -419,11 +450,35 @@ class Deck:
 
     def kind_title(self, slide, s):
         self.fill(slide, s, bodies=[[s.get("subtitle", "")]])
+        if s.get("aws"):
+            self.aws_arrow(slide)
+
+    def aws_arrow(self, slide):
+        """The Amazon arrow under the title, left-aligned with it, at its own aspect ratio."""
+        pic = slide.shapes.add_picture(str(self.deck_dir / "icons" / AWS_ARROW), inch(0.62), inch(4.6), width=inch(1.9))
+        pic.name = "AWS arrow"
+        pic._element.xpath(".//p:cNvPr")[0].set("descr", "Amazon arrow")
+        subtitle = [p for p in slide.placeholders if p.placeholder_format.type == PP_PLACEHOLDER.SUBTITLE or
+                    (p.placeholder_format.type == PP_PLACEHOLDER.BODY and p.top > pic.top)]
+        if subtitle and pic.top + pic.height > min(p.top for p in subtitle) - inch(0.05):
+            self.warnings.append(f"slide {self.n}: the AWS arrow may overlap the subtitle (the image is taller than expected)")
 
     kind_closing = kind_title
 
     def kind_section(self, slide, s):
         self.fill(slide, s, bodies=[[s["kicker"]]])
+        self.clear_of_art(slide, s)
+
+    def clear_of_art(self, slide, s):
+        """Narrow the title so it stops before the layout's cloud picture (the slide only; the layout is untouched)."""
+        art = [sh for sh in slide.slide_layout.shapes if sh.shape_type == MSO_SHAPE_TYPE.PICTURE and sh.width > inch(4)]
+        title = title_of(slide)
+        if not art or title is None:
+            return
+        left, top, height = title.left, title.top, title.height
+        width = max(inch(2), min(title.width, min(a.left for a in art) - inch(0.2) - left))
+        title.left, title.top, title.width, title.height = left, top, width, height
+        self.fit("the section title", s["title"], width / IN, 1.35, 40, bold=True)  # two lines at the template's 40 pt
 
     def kind_bullets(self, slide, s):
         self.fill(slide, s, bodies=[s["bullets"]], bullets=True)
@@ -483,19 +538,20 @@ class Deck:
             self.textbox(slide, 1.75, y, 4.25, 1.35, [[(st["activity"], dict(size=16, color="bg1"))]], name=f"Activity text {i + 1}", todo=todo)
             self.card(slide, 6.35, y + 0.5, 0.45, 0.35, f"Arrow {i + 1}", color="accent1", kind=MSO_SHAPE.RIGHT_ARROW)
             self.card(slide, 6.95, y, 5.75, 1.35, f"Outputs {i + 1}")
-            self.fit(f"step {i + 1} outputs", "\n".join(map(str, st["outputs"])), 5.25, 1.35, 16)
-            self.textbox(slide, 7.25, y, 5.25, 1.35, [[(text_of(o)[0], dict(size=16, color="bg1"))] for o in st["outputs"]],
+            outputs = [text_of(o) for o in st["outputs"]]
+            self.fit(f"step {i + 1} outputs", "\n".join(text for text, _ in outputs), 5.25, 1.35, 16)
+            self.textbox(slide, 7.25, y, 5.25, 1.35, [[(text, dict(size=16, color="bg1", todo=item_todo))] for text, item_todo in outputs],
                          name=f"Outputs text {i + 1}", todo=todo)
 
     def kind_stats(self, slide, s):
         self.heading(slide, s)
         for i, (st, (x, w)) in enumerate(zip(s["stats"], self.columns(len(s["stats"]))), 1):
-            todo = bool(st.get("todo") or s.get("todo"))
+            todo = bool(st.get("todo") or s.get("todo"))  # the value only; the label is marked only by the slide's todo
             self.card(slide, x, 1.55, w, 2.0, f"Stat {i}", radius=0.08)
             self.fit(f"stat {i} value", st["value"], w - 0.6, 1.0, 44, bold=True)
             self.textbox(slide, x + 0.3, 1.75, w - 0.6, 1.0, [[(st["value"], dict(size=44, bold=True, color="bg1"))]], name=f"Stat value {i}", todo=todo)
             self.fit(f"stat {i} label", st["label"], w - 0.6, 0.5, 14)
-            self.textbox(slide, x + 0.3, 2.8, w - 0.6, 0.5, [[(st["label"], dict(size=14, color="bg2"))]], name=f"Stat label {i}", todo=todo)
+            self.textbox(slide, x + 0.3, 2.8, w - 0.6, 0.5, [[(st["label"], dict(size=14, color="bg2"))]], name=f"Stat label {i}", todo=bool(s.get("todo")))
         detail = s.get("detail")
         if detail:
             lines = [detail] if isinstance(detail, str) else detail
@@ -503,6 +559,75 @@ class Deck:
             self.fit("the detail text", "\n".join(text_of(l)[0] for l in lines), 11.5, 2.45, 16, spacing=0.15 * len(lines))
             self.textbox(slide, 0.9, 4.05, 11.5, 2.45, [[(text_of(l)[0], dict(size=16, color="bg1"))] for l in lines],
                          anchor="t", after=8, name="Detail text", todo=s.get("todo"))
+
+    def kind_table(self, slide, s):
+        self.heading(slide, s)
+        cols = s["columns"]
+        rows = [r if isinstance(r, dict) else {"cells": r} for r in s["rows"]]
+        first = 12.1 / 2 if len(cols) == 2 else 12.1 * 0.32
+        widths = [first] + [(12.1 - first) / (len(cols) - 1)] * (len(cols) - 1)
+        bold = {cols.index(c) for c in s.get("bold_columns", [])}
+        y = self.table(slide, 1.55, widths, [{"cells": cols, "kind": "header"}] + [r for r in rows if not r.get("extra")], bold, "Table", s)
+        extra = [{**r, "kind": "extra"} for r in rows if r.get("extra")]
+        if extra:  # extra charges sit apart from the table, with a gap
+            self.table(slide, y + 0.2, widths, extra, bold, "Extra charges", s)
+        notes = s.get("footnotes", [])
+        if notes:
+            self.textbox(slide, 0.6, 6.15, 12.1, 0.75, [[(text_of(n)[0], dict(size=11, color="bg2", todo=text_of(n)[1]))] for n in notes],
+                         anchor="t", after=3, name="Footnotes", todo=s.get("todo"))
+
+    def table(self, slide, y, widths, rows, bold, name, s):
+        """Draw a real PowerPoint table with no table style; return the y where it ends."""
+        height = 0.5
+        frame = slide.shapes.add_table(len(rows), len(widths), inch(0.6), inch(y), inch(sum(widths)), inch(height * len(rows)))
+        frame.name = name
+        tbl = frame.table
+        props = tbl._tbl.tblPr
+        for attr in ("firstRow", "bandRow"):
+            props.attrib.pop(attr, None)
+        style = props.find(qn("a:tableStyleId"))
+        if style is not None:
+            props.remove(style)
+        for c, w in enumerate(widths):
+            tbl.columns[c].width = inch(w)
+        for r, row in enumerate(rows):
+            tbl.rows[r].height = inch(height)
+            kind = row.get("kind") or ("total" if row.get("total") else "body")
+            for c, item in enumerate(row["cells"]):
+                text, todo = text_of(item)
+                bold_cell = kind in ("header", "total") or c in bold
+                fmt = {"header": dict(size=12, bold=True, color="accent1"), "extra": dict(size=14, color="bg2")}.get(kind, dict(size=14, color="bg1"))
+                fmt = {**fmt, "bold": bold_cell or fmt.get("bold")}
+                if estimate_lines(text, widths[c] - 0.3, fmt["size"], bool(fmt["bold"])) > 1:
+                    self.warnings.append(f"slide {self.n}: table cell '{text[:30]}' may wrap, which makes its row taller")
+                cell = tbl.cell(r, c)
+                cell.margin_left = cell.margin_right = inch(0.15)
+                cell.margin_top = cell.margin_bottom = inch(0.05)
+                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+                par = cell.text_frame.paragraphs[0]
+                self.no_bullet(par, PP_ALIGN.LEFT if c == 0 else PP_ALIGN.RIGHT)
+                self.runs(par, text, bool(todo or row.get("todo") or s.get("todo")), **fmt)
+                if kind in ("header", "extra", "total"):
+                    cell.fill.solid()
+                    cell.fill.fore_color.theme_color = THEME["tx2" if kind != "total" else "accent4"]
+                else:
+                    cell.fill.background()
+                self.borders(cell, "accent4" if kind == "body" else None)
+        return y + height * len(rows)
+
+    @staticmethod
+    def borders(cell, bottom_color):
+        """No outline on any side, except a thin line under body rows (no table style, so nothing else is drawn)."""
+        props = cell._tc.get_or_add_tcPr()
+        for pos, side in enumerate(("L", "R", "T", "B")):
+            line = props.makeelement(qn(f"a:ln{side}"), {"w": "9525", "cap": "flat", "cmpd": "sng", "algn": "ctr"})
+            if side == "B" and bottom_color:
+                fill = line.makeelement(qn("a:solidFill"), {})
+                fill.append(fill.makeelement(qn("a:schemeClr"), {"val": bottom_color}))
+                line.append(fill)
+            else:
+                line.append(line.makeelement(qn("a:noFill"), {}))
+            props.insert(pos, line)  # border lines come first in a cell's properties, before its fill
 
     def kind_cases(self, slide, s):
         self.heading(slide, s)
@@ -552,10 +677,15 @@ class Deck:
             self.textbox(slide, 0.6, 2.6 + 0.63 * j, 2.0, 0.5, [[(p["name"], dict(size=15, bold=True, color="bg1"))]], name=f"Phase {j + 1} name", todo=todo)
             self.card(slide, x, 2.64 + 0.63 * j, w, 0.42, f"Phase {j + 1} bar", color="accent1", radius=0.06)
             label = p.get("label") or self.date_label(parse_month(p["start"]), parse_month(p["end"]))
-            if w >= len(label) * 11 * 0.6 / 72 + 0.2:
-                self.textbox(slide, x, 2.64 + 0.63 * j, w, 0.42, [[(label, dict(size=11, bold=True, color="tx1"))]], align=PP_ALIGN.CENTER, name=f"Phase {j + 1} dates", todo=todo)
-            else:
-                self.textbox(slide, x + w + 0.1, 2.64 + 0.63 * j, 1.8, 0.42, [[(label, dict(size=11, bold=True, color="bg1"))]], name=f"Phase {j + 1} dates", todo=todo)
+            label_w = len(label) * 11 * 0.6 / 72
+            y_bar = 2.64 + 0.63 * j
+            if w >= label_w + 0.2:
+                self.textbox(slide, x, y_bar, w, 0.42, [[(label, dict(size=11, bold=True, color="tx1"))]], align=PP_ALIGN.CENTER, name=f"Phase {j + 1} dates", todo=todo)
+            elif x + w + 0.1 + label_w <= TIMELINE_X + TIMELINE_W:
+                self.textbox(slide, x + w + 0.1, y_bar, label_w + 0.3, 0.42, [[(label, dict(size=11, bold=True, color="bg1"))]], name=f"Phase {j + 1} dates", todo=todo)
+            else:  # no room to the right at the end of the grid: beside the bar on its left
+                self.textbox(slide, x - 0.1 - label_w - 0.3, y_bar, label_w + 0.3, 0.42, [[(label, dict(size=11, bold=True, color="bg1"))]],
+                             align=PP_ALIGN.RIGHT, name=f"Phase {j + 1} dates", todo=todo)
 
     @staticmethod
     def milestone_date(value):
@@ -607,6 +737,8 @@ def cmd_build(args) -> int:
     except (OSError, json.JSONDecodeError) as exc:
         return report("Cannot read the deck", [str(exc)])
     problems = check_deck(defn, deck)
+    if any(s.get("aws") for s in deck.get("slides", [])) and not (deck_dir / "icons" / AWS_ARROW).exists():
+        problems.append(f"a title slide has \"aws\": true, but icons/{AWS_ARROW} is not in the deck type: add the Amazon arrow image you were given")
     if problems:
         return report("The deck needs fixing before it can be built", problems)
     if out.exists():

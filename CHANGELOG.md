@@ -2,6 +2,18 @@
 
 One line per release. Say what changed, and whether a template or customer-facing rule was approved (by whom, when) or is still a draft.
 
+## 0.13.0 (draft)
+- New document type `hld`: a High-Level Design of at most 5 pages for non-technical managers, built on the Cloudbuzz sow-data template (Aptos, purple headings). Template and rules are a draft, not approved.
+
+## 0.12.0 (draft)
+- Decks: `"aws": true` on a title slide places the Amazon arrow (a user-supplied `icons/amazon_arrow.png`, not included yet) under the title, named "AWS arrow" with the alt text "Amazon arrow"; the build stops with a clear message if the image is missing. Lesson added: AWS decks use the arrow on the title slide. Not yet checked with the real image.
+
+## 0.11.0 (draft)
+- Decks: new `table` slide kind (a real table with a header, bold columns, highlighted totals, a detached extra-charges row and footnotes), and bold group headings without a bullet in `bullets` and `two_column`. Before this, prices had to be added to the .pptx by hand, and a rebuild lost them. Generic deck lessons added to the building-decks lessons.md. Not yet tried in a real Claude Code session.
+
+## 0.10.1 (draft)
+- Decks: process outputs honour `{"text", "todo"}` items; a section title stops before the cloud art (and warns when it wraps past two lines); a stat's `todo` highlights the value only; a timeline label wider than its bar sits beside it in white (on its left at the end of the grid). The section title was never narrowed by the first attempt, because python-pptx's `slide.shapes.title` finds nothing in this template; titles are now found by type.
+
 ## 0.10.0 (draft)
 - New skill building-decks and command /docs-skills:deck: notes to a branded .pptx from the Cloudbuzz template (assessment deck type), with red-highlighted to-dos. /docs-skills:update and /docs-skills:learn also handle decks (.pptx), and compare.py reads .pptx. Uses the company template unchanged; the template and deck rules are a draft, not approved. Not yet tried in a real Claude Code session; the example deck was checked by rendering it in PowerPoint.
 

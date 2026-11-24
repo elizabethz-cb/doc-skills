@@ -1,6 +1,6 @@
 ---
 name: drafting-documents
-description: Drafts customer documents (statement of work, assessment, other types in its doctypes folder) as Word files from meeting notes and customer files, using the company templates, and lists the open questions. Use when the user asks to draft, update or review a SOW, an assessment or a similar document from notes. Does not redact files.
+description: Drafts customer documents (statement of work, assessment, high-level design (HLD), other types in its doctypes folder) as Word files from meeting notes and customer files, using the company templates, and lists the open questions. Use when the user asks to draft, update or review a SOW, an assessment, an HLD or a similar document from notes. Does not redact files.
 ---
 
 # Drafting documents from notes

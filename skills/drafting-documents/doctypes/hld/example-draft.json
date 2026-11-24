@@ -1,0 +1,73 @@
+{
+  "title": "High-Level Design - Sales Insight data platform",
+  "customer_name": "CUSTOMER_001",
+  "document_date": "2026-11-24",
+  "project_name": "Sales Insight",
+  "executive_summary": "Today CUSTOMER_001's daily sales report arrives around 11:00, and finance and operations often see different numbers for the same month. The reporting server is also out of support next year. We propose to move reporting to a data platform on AWS that collects sales and stock data every night, applies one agreed set of business rules, and feeds the existing dashboards. Managers will get the daily report by 08:00, everyone will work from the same numbers, and the unsupported server can be retired. The project runs in four phases over about 12 weeks.",
+  "background": "Sales and stock reports run on an on-premises database with Qlik scripts. Reports are often late, the same figures differ between departments, and the business logic is known well by only one person. The server reaches end of support next year, so the reporting has to move in any case.",
+  "goals": [
+    {"goal": "Faster daily reporting", "success_measure": "Daily sales report available by 08:00"},
+    {"goal": "One version of the truth", "success_measure": "Finance and operations reports show the same monthly totals"},
+    {"goal": "Retire the unsupported server", "success_measure": "All reports run from the new platform before end of support"},
+    {"goal": "Less dependence on one person", "success_measure": "Business rules documented and handed over to the IT team"}
+  ],
+  "in_scope": [
+    "Collect data from the ERP (SOURCE_001) and the CRM (SOURCE_002)",
+    "Rebuild the business rules from the existing Qlik scripts in one shared place",
+    "Feed the existing BI dashboards from the new platform",
+    "Secure access with the company login",
+    "Training and handover to the IT team",
+    "Two weeks of Hyper-Care after go-live"
+  ],
+  "out_of_scope": [
+    "New dashboards or report designs",
+    "Historical data older than 5 years",
+    "Changes to the ERP or CRM systems"
+  ],
+  "solution_overview": "Every night, data from the ERP and the CRM is copied into one secure storage area on AWS. It is then cleaned and combined using the same business rules for every department, so all reports use the same numbers. The existing BI tool reads the prepared data directly, so users keep the dashboards they know. Access uses the company login, and the whole process is monitored so the IT team is alerted if a nightly run fails.",
+  "architecture_note": "The ERP and the CRM send data every night to a central storage area on AWS, where it is prepared and then read by the existing BI dashboards.",
+  "components": [
+    {"component": "Amazon S3", "purpose": "Central storage for raw and prepared data", "business_value": "One secure place for all reporting data"},
+    {"component": "AWS Glue", "purpose": "Collects, cleans and combines the data every night", "business_value": "Same business rules for every report"},
+    {"component": "Amazon Athena", "purpose": "Lets the BI tool query the prepared data", "business_value": "Existing dashboards keep working"},
+    {"component": "Company login (single sign-on)", "purpose": "Controls who can see which data", "business_value": "No new passwords; access managed centrally"}
+  ],
+  "why_this_approach": [
+    "Keeps the dashboards users already know, so adoption is easy",
+    "Managed AWS services, so there are no servers to maintain",
+    "Costs grow with use instead of a large up-front purchase",
+    "Business rules are written down once and reused everywhere"
+  ],
+  "security_operations": [
+    "Access only through the company login, with permissions per team",
+    "Data encrypted in storage and in transit",
+    "Daily backups",
+    "Nightly runs are monitored and the IT team is alerted on failure",
+    "Data location requirements to be confirmed (see Q1)"
+  ],
+  "phases": [
+    {"phase": "Design", "outcome": "Agreed design and business rules", "duration": "2 weeks"},
+    {"phase": "Build", "outcome": "Data collected and prepared every night", "duration": "6 weeks"},
+    {"phase": "Testing", "outcome": "Reports match agreed figures", "duration": "2 weeks"},
+    {"phase": "Go-live and Hyper-Care", "outcome": "Reports run from AWS, team trained", "duration": "2 weeks"}
+  ],
+  "costs": [
+    {"item": "Monthly AWS cost", "estimate": "To be confirmed", "note": "Estimate to be prepared after design"},
+    {"item": "Project effort", "estimate": "To be confirmed", "note": "Priced in the SOW"}
+  ],
+  "risks": [
+    {"risk": "Business logic is known well by only one person", "impact": "high", "mitigation": "Review the Qlik scripts with PERSON_002 early in design and document the rules"},
+    {"risk": "Figures differ from today's reports during testing", "impact": "medium", "mitigation": "Agree test figures with finance before testing starts"},
+    {"risk": "Data must stay in one country", "impact": "medium", "mitigation": "Confirm the requirement before design (Q1) and choose the AWS region accordingly"}
+  ],
+  "next_steps": [
+    "PERSON_001 to approve this HLD by 2026-12-01",
+    "CUSTOMER_001 to answer the open questions",
+    "We send the SOW with effort and cost estimates",
+    "PERSON_002 to share the Qlik scripts for the design phase"
+  ],
+  "open_questions": [
+    {"id": "Q1", "question": "Must the reporting data stay in one country?", "impact": "design", "assumed_meanwhile": "No restriction; region chosen for lowest latency"},
+    {"id": "Q2", "question": "Which reports must match today's figures exactly during testing?", "impact": "scope", "assumed_meanwhile": "The daily sales report and the monthly stock report"}
+  ]
+}

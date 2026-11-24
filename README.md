@@ -329,11 +329,13 @@ None of these three commits or pushes. Each ends by telling you to review `git d
 
 The `building-decks` skill turns notes into a PowerPoint deck in the company style, the same way `drafting-documents` makes a Word file. Run `/docs-skills:deck <deck type> <customer>` (section 16), or ask for it directly: *"Use the building-decks skill to make a deck from these notes."*
 
-1. Claude writes `deck.json`: one entry per slide, each a **kind** (`title`, `agenda`, `section`, `bullets`, `two_column`, `cards`, `process`, `stats`, `cases`, `timeline`, `closing`) with its fields. The table of kinds is in `skills/building-decks/SKILL.md`.
+1. Claude writes `deck.json`: one entry per slide, each a **kind** (`title`, `agenda`, `section`, `bullets`, `two_column`, `cards`, `process`, `stats`, `table`, `cases`, `timeline`, `closing`) with its fields. The table of kinds is in `skills/building-decks/SKILL.md`.
 2. `fill_deck.py` opens the deck type's `template.potx`, removes its example slides and builds the new ones from the template's layouts. Cards, the process rows, key numbers, case studies and the timeline are drawn in code to match the template's examples. The logo and cloud art stay in the layouts and are never touched.
 3. Anything in `[brackets]`, or marked `"todo": true`, gets a **red highlight** so the team sees what is still open. The script lists them all at the end. Speaker notes go in the slide notes.
 4. `python tests/smoke.py` builds `examples/deck-example-FICTIONAL.json`, which uses every kind, and checks it.
 
+- **Tables and headings.** Prices go in a `table` slide: a real PowerPoint table with a header row, bold columns you name, highlighted total rows, extra charges in a detached row, and footnotes. In `bullets` and `two_column`, a line can be a bold group heading with no bullet. Both are in the table of kinds in `SKILL.md`.
+- **AWS decks.** `"aws": true` on the title slide puts the Amazon arrow under the title. The image is never drawn by the script: put the file you were given at `skills/building-decks/decktypes/<type>/icons/amazon_arrow.png`. Without it the build stops with a clear message.
 - **Versions.** `deck-v1.pptx`, then `v2`, `v3`: the script refuses to overwrite a file. `/docs-skills:update` makes the next one.
 - **Hand edits.** A deck is rebuilt from `deck.json`, so layout changes made by hand in PowerPoint are lost in the next version, the same as for Word (section 16). Text edits are read and carried over.
 - **Lessons.** `/docs-skills:learn` compares an accepted `.pptx` with `deck-v1.pptx`. `/docs-skills:apply-lessons deck <path>` adds the lessons to `skills/building-decks/lessons.md`.

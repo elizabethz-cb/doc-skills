@@ -1,0 +1,134 @@
+{
+  "name": "hld",
+  "label": "High-Level Design (management summary)",
+  "fields": {
+    "title": {
+      "type": "text",
+      "help": "Short title, e.g. 'High-Level Design - Sales Insight data platform'."
+    },
+    "customer_name": {
+      "type": "text",
+      "help": "Use the customer placeholder exactly as it appears in the notes."
+    },
+    "document_date": {
+      "type": "text",
+      "help": "Today's date, e.g. 2026-11-24."
+    },
+    "project_name": {
+      "type": "text",
+      "help": "Name of the customer's project or system, as used in the notes."
+    },
+    "executive_summary": {
+      "type": "text",
+      "help": "One paragraph, at most 120 words: the problem, what we propose, and the main business outcome."
+    },
+    "background": {
+      "type": "text",
+      "help": "At most 100 words: the current situation and why the change is needed now."
+    },
+    "goals": {
+      "type": "table",
+      "columns": [
+        "goal",
+        "success_measure"
+      ],
+      "help": "3 to 5 business goals, each with a measure a manager can check, e.g. 'Reports ready by 08:00 every day'."
+    },
+    "in_scope": {
+      "type": "list",
+      "help": "At most 6 items, in business wording."
+    },
+    "out_of_scope": {
+      "type": "list",
+      "help": "At most 5 items that a reader could otherwise assume are included."
+    },
+    "solution_overview": {
+      "type": "text",
+      "help": "At most 150 words, plain language: how the solution works end to end, without technical detail."
+    },
+    "architecture_note": {
+      "type": "text",
+      "help": "One sentence describing the summary diagram that is added by hand in Word."
+    },
+    "components": {
+      "type": "table",
+      "columns": [
+        "component",
+        "purpose",
+        "business_value"
+      ],
+      "help": "4 to 7 main building blocks. Service names are fine; purpose and value in one short line each."
+    },
+    "why_this_approach": {
+      "type": "list",
+      "help": "3 or 4 reasons this design fits the customer, each one line."
+    },
+    "security_operations": {
+      "type": "list",
+      "help": "3 to 5 lines at business level: access, data protection, backup and recovery, monitoring, compliance."
+    },
+    "phases": {
+      "type": "table",
+      "columns": [
+        "phase",
+        "outcome",
+        "duration"
+      ],
+      "help": "3 to 6 phases in order. Duration only from the notes, otherwise 'To be confirmed'."
+    },
+    "costs": {
+      "type": "table",
+      "columns": [
+        "item",
+        "estimate",
+        "note"
+      ],
+      "help": "At most 5 rows, e.g. monthly cloud cost, one-time project effort. Figures only from the notes, otherwise 'To be confirmed'."
+    },
+    "risks": {
+      "type": "table",
+      "columns": [
+        "risk",
+        "impact",
+        "mitigation"
+      ],
+      "help": "3 to 5 main risks. impact is high, medium or low."
+    },
+    "next_steps": {
+      "type": "list",
+      "help": "At most 5 actions or decisions, each naming who decides or acts."
+    },
+    "open_questions": {
+      "type": "table",
+      "columns": [
+        "id",
+        "question",
+        "impact",
+        "assumed_meanwhile"
+      ],
+      "help": "At most 5, the ones that matter most. impact is one of: price, scope, schedule, design, risk. List any others to the user only."
+    }
+  },
+  "forbidden_patterns": [
+    {
+      "name": "instance type",
+      "regex": "\\b(?:db\\.)?[a-z]\\d[a-z]{0,2}\\.(?:nano|micro|small|medium|large|\\d*xlarge|metal)\\b"
+    },
+    {
+      "name": "IP address or network range",
+      "regex": "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b"
+    },
+    {
+      "name": "resource count such as '2 x EC2'",
+      "regex": "\\b\\d+\\s*x\\s*(?:ec2|rds|instances?|servers?|nodes?|vms?)\\b"
+    },
+    {
+      "name": "cloud account number",
+      "regex": "(?<!\\d)\\d{12}(?!\\d)"
+    },
+    {
+      "name": "access key",
+      "regex": "\\b(?:AKIA|ASIA)[A-Z0-9]{16}\\b"
+    }
+  ]
+}

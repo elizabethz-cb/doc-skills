@@ -1,7 +1,7 @@
 ---
 name: draft
-description: Creates version 1 of a SOW or assessment and a summary architecture diagram from the files in input/. Use when the user invokes /docs-skills:draft.
-argument-hint: <SOW|assessment> <customer name>
+description: Creates version 1 of a SOW, assessment or HLD and a summary architecture diagram from the files in input/. Use when the user invokes /docs-skills:draft.
+argument-hint: <SOW|assessment|HLD> <customer name>
 disable-model-invocation: true
 ---
 

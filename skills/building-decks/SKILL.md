@@ -35,7 +35,8 @@ This skill turns meeting notes into a branded `.pptx`. Each deck type is a folde
 
 | kind | fields |
 | --- | --- |
-| `title`, `closing` | `title`, `subtitle` |
+| `title` | `title`, `subtitle`, `aws` (`true` puts the Amazon arrow under the title; needs `icons/amazon_arrow.png` in the deck type, an image the user supplies) |
+| `closing` | `title`, `subtitle` |
 | `section` | `kicker` ("Section 01"), `title` |
 | `agenda` | `title`, `items` (1 to 5) |
 | `bullets` | `title`, `bullets` (1 to 8) |
@@ -43,10 +44,11 @@ This skill turns meeting notes into a branded `.pptx`. Each deck type is a folde
 | `cards` | `title`, `cards` (2 to 3): `icon`, `heading`, `items` (`{"label", "text"}`) |
 | `process` | `title`, `steps` (1 to 3): `activity`, `outputs` |
 | `stats` | `title`, `stats` (2 to 3): `value`, `label`; optional `detail` (lines) |
+| `table` | `title`, `columns` (2 to 7), `rows` (1 to 7): a list of cells, or `{"cells": [...], "total": true}` (highlighted) or `{"cells": [...], "extra": true}` (a detached row below the table); `bold_columns` (column names); `footnotes` (up to 3) |
 | `cases` | `title`, `cases` (2 to 3): `customer`, `challenge`, `solution`, `outcome` |
 | `timeline` | `title`, `programme`, `start` (`2027-01`, a quarter's first month), `months` (multiple of 3, default 24), `phases` (up to 6): `name`, `start`, `end`; `milestones` (up to 3): `label`, `date` |
 
-Any slide, card, step, stat, case, phase or milestone can carry `"todo": true`. A list item can be `{"text": "...", "todo": true}`. Icon names are in `fields.json`.
+Any slide, card, step, stat, case, phase or milestone can carry `"todo": true`. A list item can be `{"text": "...", "todo": true}` (also a step's `outputs`). On a stat, `todo` marks the value only. In `bullets` and `two_column`, a line can be `{"text": "...", "heading": true}` (bold, no bullet) or `{"text": "...", "bold": true}`. Icon names are in `fields.json`.
 
 ## House style
 
